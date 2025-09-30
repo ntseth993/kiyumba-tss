@@ -1,11 +1,13 @@
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Users, BookOpen, Award, DollarSign, TrendingUp, UserCheck, Calendar, Settings } from 'lucide-react';
+import { Users, BookOpen, Award, DollarSign, TrendingUp, UserCheck, Calendar, Settings, FileText, Image } from 'lucide-react';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const stats = [
     { id: 1, label: 'Total Students', value: '1,524', icon: Users, color: '#4F46E5', change: '+12%' },
@@ -152,29 +154,29 @@ const AdminDashboard = () => {
               <h2>Quick Actions</h2>
             </div>
             <div className="quick-actions-grid">
-              <button className="action-btn card">
-                <Users size={24} />
-                <span>Add Student</span>
+              <button className="action-btn card" onClick={() => navigate('/admin/applications')}>
+                <FileText size={24} />
+                <span>Applications</span>
               </button>
-              <button className="action-btn card">
-                <UserCheck size={24} />
-                <span>Add Teacher</span>
+              <button className="action-btn card" onClick={() => navigate('/admin/users')}>
+                <Users size={24} />
+                <span>Manage Users</span>
+              </button>
+              <button className="action-btn card" onClick={() => navigate('/admin/content')}>
+                <Image size={24} />
+                <span>Content</span>
               </button>
               <button className="action-btn card">
                 <BookOpen size={24} />
                 <span>Create Course</span>
               </button>
               <button className="action-btn card">
-                <Award size={24} />
-                <span>View Reports</span>
-              </button>
-              <button className="action-btn card">
                 <Calendar size={24} />
                 <span>Schedule Event</span>
               </button>
               <button className="action-btn card">
-                <DollarSign size={24} />
-                <span>Manage Fees</span>
+                <Award size={24} />
+                <span>View Reports</span>
               </button>
             </div>
           </div>

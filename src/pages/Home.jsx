@@ -12,14 +12,14 @@ const Home = () => {
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
-          <h1 className="hero-title fade-in">Welcome to Kiyumba School</h1>
+          <h1 className="hero-title fade-in">Welcome to Kiyumba Technical School</h1>
           <p className="hero-subtitle fade-in">
-            Empowering students through excellence in education, fostering innovation, 
-            and building tomorrow's leaders today.
+            Transform your future with professional technical education. Learn Software Development, 
+            Fashion Design, Building Construction, or Wood Technology at levels L3, L4, and L5.
           </p>
           <div className="hero-buttons fade-in">
-            <Link to="/login" className="btn btn-primary btn-large">
-              Get Started
+            <Link to="/register" className="btn btn-primary btn-large">
+              Apply Now
               <ArrowRight size={20} />
             </Link>
             <Link to="/about" className="btn btn-outline btn-large">
@@ -117,44 +117,55 @@ const Home = () => {
       {/* Programs Section */}
       <section className="programs">
         <div className="container">
-          <h2 className="section-title">Our Programs</h2>
+          <h2 className="section-title">Our Technical Programs</h2>
           <p className="section-subtitle">
-            Comprehensive educational programs for every student
+            Professional technical education across levels L3, L4, and L5
           </p>
 
           <div className="programs-grid">
             <div className="program-card card">
-              <h3>Primary Education</h3>
+              <h3>Software Development</h3>
               <ul className="program-features">
-                <li><CheckCircle size={20} /> Foundation curriculum</li>
-                <li><CheckCircle size={20} /> Interactive learning</li>
-                <li><CheckCircle size={20} /> Character development</li>
-                <li><CheckCircle size={20} /> Creative activities</li>
+                <li><CheckCircle size={20} /> Web Development</li>
+                <li><CheckCircle size={20} /> Mobile Apps</li>
+                <li><CheckCircle size={20} /> Database Management</li>
+                <li><CheckCircle size={20} /> Levels: L3, L4, L5</li>
               </ul>
-              <button className="btn btn-outline">Learn More</button>
+              <Link to="/register" className="btn btn-outline">Apply Now</Link>
             </div>
 
             <div className="program-card card featured">
               <div className="featured-badge">Most Popular</div>
-              <h3>Secondary Education</h3>
+              <h3>Fashion & Design</h3>
               <ul className="program-features">
-                <li><CheckCircle size={20} /> Advanced curriculum</li>
-                <li><CheckCircle size={20} /> Career guidance</li>
-                <li><CheckCircle size={20} /> University preparation</li>
-                <li><CheckCircle size={20} /> Leadership training</li>
+                <li><CheckCircle size={20} /> Pattern Making</li>
+                <li><CheckCircle size={20} /> Garment Construction</li>
+                <li><CheckCircle size={20} /> Fashion Illustration</li>
+                <li><CheckCircle size={20} /> Levels: L3, L4, L5</li>
               </ul>
-              <button className="btn btn-primary">Learn More</button>
+              <Link to="/register" className="btn btn-primary">Apply Now</Link>
             </div>
 
             <div className="program-card card">
-              <h3>Extra Curricular</h3>
+              <h3>Building Construction</h3>
               <ul className="program-features">
-                <li><CheckCircle size={20} /> Sports activities</li>
-                <li><CheckCircle size={20} /> Arts & music</li>
-                <li><CheckCircle size={20} /> Clubs & societies</li>
-                <li><CheckCircle size={20} /> Community service</li>
+                <li><CheckCircle size={20} /> Structural Design</li>
+                <li><CheckCircle size={20} /> Construction Methods</li>
+                <li><CheckCircle size={20} /> Site Management</li>
+                <li><CheckCircle size={20} /> Levels: L3, L4, L5</li>
               </ul>
-              <button className="btn btn-outline">Learn More</button>
+              <Link to="/register" className="btn btn-outline">Apply Now</Link>
+            </div>
+
+            <div className="program-card card">
+              <h3>Wood Technology</h3>
+              <ul className="program-features">
+                <li><CheckCircle size={20} /> Carpentry Skills</li>
+                <li><CheckCircle size={20} /> Furniture Design</li>
+                <li><CheckCircle size={20} /> Wood Processing</li>
+                <li><CheckCircle size={20} /> Levels: L3, L4, L5</li>
+              </ul>
+              <Link to="/register" className="btn btn-outline">Apply Now</Link>
             </div>
           </div>
         </div>
@@ -164,13 +175,13 @@ const Home = () => {
       <section className="cta-section">
         <div className="container">
           <div className="cta-content">
-            <h2>Ready to Join Kiyumba School?</h2>
+            <h2>Ready to Join Kiyumba Technical School?</h2>
             <p>
-              Take the first step towards an excellent education. 
-              Login to access your student or admin dashboard.
+              Start your journey towards professional technical excellence. 
+              Apply now and transform your future with hands-on training.
             </p>
-            <Link to="/login" className="btn btn-primary btn-large">
-              Login Now
+            <Link to="/register" className="btn btn-primary btn-large">
+              Apply Now
               <ArrowRight size={20} />
             </Link>
           </div>
