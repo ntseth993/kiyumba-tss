@@ -1,0 +1,141 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { GraduationCap, Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import './Login.css';
+
+const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const result = login(email, password);
+    
+    if (result.success) {
+      // Navigate based on user role
+      if (result.user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (result.user.role === 'student') {
+        navigate('/student/dashboard');
+      }
+    } else {
+      setError(result.error);
+    }
+    
+    setLoading(false);
+  };
+
+  const fillDemoCredentials = (role) => {
+    if (role === 'admin') {
+      setEmail('admin@kiyumba.com');
+      setPassword('admin123');
+    } else {
+      setEmail('student@kiyumba.com');
+      setPassword('student123');
+    }
+    setError('');
+  };
+
+  return (
+    <div className="login-page">
+      <Link to="/" className="back-button">
+        <ArrowLeft size={20} />
+        Back to Home
+      </Link>
+
+      <div className="login-container">
+        <div className="login-card card">
+          <div className="login-header">
+            <div className="login-logo">
+              <GraduationCap size={48} />
+            </div>
+            <h1>Welcome Back</h1>
+            <p>Login to access your dashboard</p>
+          </div>
+
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="login-form">
+            <div className="form-group">
+              <label htmlFor="email">
+                <Mail size={18} />
+                Email Address
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">
+                <Lock size={18} />
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              className="btn btn-primary"
+              style={{ width: '100%' }}
+              disabled={loading}
+            >
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
+
+          <div className="demo-credentials">
+            <p className="demo-title">Demo Credentials:</p>
+            <div className="demo-buttons">
+              <button 
+                className="btn btn-outline demo-btn"
+                onClick={() => fillDemoCredentials('admin')}
+                type="button"
+              >
+                Admin Demo
+              </button>
+              <button 
+                className="btn btn-outline demo-btn"
+                onClick={() => fillDemoCredentials('student')}
+                type="button"
+              >
+                Student Demo
+              </button>
+            </div>
+            <div className="demo-info">
+              <p><strong>Admin:</strong> admin@kiyumba.com / admin123</p>
+              <p><strong>Student:</strong> student@kiyumba.com / student123</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Login;

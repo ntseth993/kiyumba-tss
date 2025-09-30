@@ -1,0 +1,212 @@
+.about-page {
+  min-height: 100vh;
+}
+
+.about-hero {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  padding: 100px 20px;
+  text-align: center;
+}
+
+.about-hero h1 {
+  font-size: 3rem;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.about-hero p {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.our-story {
+  padding: 80px 20px;
+  background-color: var(--bg-white);
+}
+
+.story-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.story-image-placeholder {
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.story-content h2 {
+  font-size: 2.5rem;
+  color: var(--text-dark);
+  margin-bottom: 24px;
+}
+
+.story-content p {
+  color: var(--text-light);
+  line-height: 1.8;
+  margin-bottom: 20px;
+  font-size: 1.0625rem;
+}
+
+.mission-vision {
+  padding: 80px 20px;
+  background-color: var(--bg-light);
+}
+
+.mv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 32px;
+}
+
+.mv-card {
+  padding: 40px;
+  text-align: center;
+}
+
+.mv-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  color: white;
+}
+
+.mv-card h3 {
+  font-size: 1.75rem;
+  color: var(--text-dark);
+  margin-bottom: 20px;
+}
+
+.mv-card p {
+  color: var(--text-light);
+  line-height: 1.8;
+  font-size: 1.0625rem;
+}
+
+.core-values {
+  padding: 80px 20px;
+  background-color: var(--bg-white);
+}
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.value-item {
+  padding: 32px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.value-number {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  opacity: 0.1;
+  position: absolute;
+  top: -10px;
+  right: 20px;
+  line-height: 1;
+}
+
+.value-item h3 {
+  font-size: 1.5rem;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.value-item p {
+  color: var(--text-light);
+  line-height: 1.7;
+  position: relative;
+  z-index: 1;
+}
+
+.achievements {
+  padding: 80px 20px;
+  background-color: var(--bg-light);
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.achievement-card {
+  padding: 32px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.achievement-card:hover {
+  transform: translateY(-8px);
+}
+
+.achievement-card svg {
+  color: var(--accent-color);
+  margin-bottom: 20px;
+}
+
+.achievement-card h3 {
+  font-size: 1.25rem;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+
+.achievement-card p {
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+@media (max-width: 968px) {
+  .story-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .mv-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .about-hero h1 {
+    font-size: 2rem;
+  }
+
+  .about-hero p {
+    font-size: 1.125rem;
+  }
+
+  .story-content h2 {
+    font-size: 2rem;
+  }
+
+  .values-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .achievements-grid {
+    grid-template-columns: 1fr;
+  }
+}
