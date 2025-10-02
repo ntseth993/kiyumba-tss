@@ -33,6 +33,15 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       const { course_id, title, type, instructions, questions, visible } = req.body;
+      if (!title || typeof title !== 'string' || title.length < 3) {
+        return res.status(400).json({ error: 'Title required (min 3 chars)' });
+      }
+      if (!type || !['quiz','exam','test'].includes(type)) {
+        return res.status(400).json({ error: 'Type must be quiz, exam, or test' });
+      }
+      if (!course_id || isNaN(Number(course_id))) {
+        return res.status(400).json({ error: 'course_id required and must be integer' });
+      }
       const q = `INSERT INTO assessments (course_id, title, type, instructions, questions, visible) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`;
       const result = await pool.query(q, [course_id, title, type, instructions, JSON.stringify(questions || []), visible || false]);
       return res.status(201).json(result.rows[0]);

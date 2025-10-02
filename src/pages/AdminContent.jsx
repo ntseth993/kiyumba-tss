@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Image, Video, MessageSquare, Upload, Trash2, Eye, FileUp } from 'lucide-react';
-import Cropper from 'react-easy-crop';
-import getCroppedImg from '../utils/cropImage';
+import ImageEditorModal from '../components/ImageEditorModal';
 import './AdminContent.css';
 
 const AdminContent = () => {
@@ -21,11 +20,8 @@ const AdminContent = () => {
   const [editingPostId, setEditingPostId] = useState(null);
   const [editPost, setEditPost] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [cropSrc, setCropSrc] = useState(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [imageEditorOpen, setImageEditorOpen] = useState(false);
+  const [editingImage, setEditingImage] = useState(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -40,10 +36,9 @@ const AdminContent = () => {
       reader.onload = (event) => {
         const content = event.target.result;
         if (file.type.startsWith('image/')) {
-        setNewPost({...newPost, type: 'image', imageUrl: content});
-        // open crop modal
-        setCropSrc(content);
-        setCropModalOpen(true);
+          setNewPost({...newPost, type: 'image'});
+          setEditingImage(file);
+          setImageEditorOpen(true);
         } else if (file.type.startsWith('text/')) {
           setNewPost({...newPost, content: content});
         }
@@ -58,20 +53,14 @@ const AdminContent = () => {
     }
   };
 
-  const onCropComplete = (croppedArea, croppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
-  };
-
-  const applyCrop = async () => {
-    try {
-      const croppedDataUrl = await getCroppedImg(cropSrc, croppedAreaPixels);
-      setNewPost(prev => ({ ...prev, imageUrl: croppedDataUrl }));
-      setCropModalOpen(false);
-      setCropSrc(null);
-    } catch (e) {
-      console.error('crop error', e);
-      alert('Failed to crop image');
+  const handleImageSave = (processedImage) => {
+    if (editingPostId) {
+      setEditPost(prev => ({ ...prev, imageUrl: URL.createObjectURL(processedImage) }));
+    } else {
+      setNewPost(prev => ({ ...prev, imageUrl: URL.createObjectURL(processedImage) }));
     }
+    setImageEditorOpen(false);
+    setEditingImage(null);
   };
 
   const validateForm = () => {
@@ -153,6 +142,20 @@ const AdminContent = () => {
   const startEdit = (post) => {
     setEditingPostId(post.id);
     setEditPost({ ...post });
+  };
+
+  // open crop modal for editing existing post image
+  const editImage = async (imageUrl) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], "image.jpg", { type: blob.type });
+      setEditingImage(file);
+      setImageEditorOpen(true);
+    } catch (error) {
+      console.error('Error loading image for editing:', error);
+      alert('Failed to load image for editing');
+    }
   };
 
   const cancelEdit = () => {
@@ -261,25 +264,15 @@ const AdminContent = () => {
               )}
             </div>
 
-            {cropModalOpen && (
-              <div className="crop-modal">
-                <div className="crop-container">
-                  <Cropper
-                    image={cropSrc}
-                    crop={crop}
-                    zoom={zoom}
-                    aspect={16/9}
-                    onCropChange={setCrop}
-                    onZoomChange={setZoom}
-                    onCropComplete={onCropComplete}
-                  />
-                </div>
-                <div className="crop-actions">
-                  <button type="button" className="btn" onClick={() => { setCropModalOpen(false); setCropSrc(null); }}>Cancel</button>
-                  <button type="button" className="btn btn-primary" onClick={applyCrop}>Apply Crop</button>
-                </div>
-              </div>
-            )}
+            <ImageEditorModal
+              isOpen={imageEditorOpen}
+              onClose={() => {
+                setImageEditorOpen(false);
+                setEditingImage(null);
+              }}
+              onSave={handleImageSave}
+              initialImage={editingImage}
+            />
 
             <div className="form-group">
               <label>Title *</label>
@@ -406,6 +399,11 @@ const AdminContent = () => {
                       <div className="form-group">
                         <label>Image URL</label>
                         <input type="url" value={editPost.imageUrl || ''} onChange={(e) => handleEditChange('imageUrl', e.target.value)} />
+                        {editPost.imageUrl && (
+                          <div style={{ marginTop: '8px' }}>
+                            <button type="button" className="btn" onClick={() => editImage(editPost.imageUrl)}>Edit Image</button>
+                          </div>
+                        )}
                       </div>
                       <div className="form-group">
                         <label>Video URL</label>
@@ -431,7 +429,11 @@ const AdminContent = () => {
                     </form>
                   ) : (
                     <>
-                      <p className="post-content" style={{ fontSize: post.textSize === 'small' ? '14px' : post.textSize === 'large' ? '18px' : '16px' }}>{post.content}</p>
+                      <p className="post-content" style={{ fontSize: post.textSize === 'small' ? '14px' : post.textSize === 'large' ? '18px' : '16px', maxHeight: 80, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {post.type === 'event' && post.content.length > 120
+                          ? post.content.slice(0, 120) + '... Read more'
+                          : post.content}
+                      </p>
                       {post.imageUrl && (
                         <div className="post-media">
                           <img src={post.imageUrl} alt={post.title} />
