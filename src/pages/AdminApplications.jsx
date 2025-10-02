@@ -12,10 +12,37 @@ const AdminApplications = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    // Load applications from localStorage
-    const stored = JSON.parse(localStorage.getItem('applications') || '[]');
-    setApplications(stored);
-    setFilteredApplications(stored);
+    // Try loading applications from server API, fallback to localStorage
+    const load = async () => {
+      try {
+        const res = await fetch('/api/applications');
+        if (!res.ok) throw new Error('API fetch failed');
+        const data = await res.json();
+        // Map server fields to UI expected fields
+        const mapped = data.map(a => ({
+          id: a.id,
+          firstName: a.first_name,
+          lastName: a.last_name,
+          email: a.email,
+          phone: a.phone,
+          program: a.program,
+          level: a.level,
+          address: a.address,
+          dateOfBirth: a.date_of_birth,
+          previousSchool: a.previous_school,
+          reason: a.reason,
+          status: a.status,
+          appliedDate: a.applied_date
+        }));
+        setApplications(mapped);
+        setFilteredApplications(mapped);
+      } catch (err) {
+        const stored = JSON.parse(localStorage.getItem('applications') || '[]');
+        setApplications(stored);
+        setFilteredApplications(stored);
+      }
+    };
+    load();
   }, []);
 
   useEffect(() => {
@@ -39,51 +66,99 @@ const AdminApplications = () => {
   }, [filterStatus, searchTerm, applications]);
 
   const handleApprove = (application) => {
-    const updatedApplications = applications.map(app => {
-      if (app.id === application.id) {
-        // Create new user account
+    // Try to update on server, fallback to localStorage
+    const update = async () => {
+      try {
+        const res = await fetch(`/api/applications/${application.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'approved' })
+        });
+        if (!res.ok) throw new Error('API update failed');
+        // create user locally after success
         const newUser = {
-          id: app.id,
-          name: `${app.firstName} ${app.lastName}`,
-          email: app.email,
+          id: application.id,
+          name: `${application.firstName} ${application.lastName}`,
+          email: application.email,
           role: 'student',
-          program: app.program,
-          level: app.level,
-          phone: app.phone,
-          address: app.address,
-          dateOfBirth: app.dateOfBirth,
+          program: application.program,
+          level: application.level,
+          phone: application.phone,
+          address: application.address,
+          dateOfBirth: application.dateOfBirth,
           studentId: `STD${Date.now()}`,
-          avatar: `https://ui-avatars.com/api/?name=${app.firstName}+${app.lastName}&background=10B981&color=fff`,
+          avatar: `https://ui-avatars.com/api/?name=${application.firstName}+${application.lastName}&background=10B981&color=fff`,
           enrolledDate: new Date().toISOString()
         };
-
-        // Store approved user
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         users.push(newUser);
         localStorage.setItem('users', JSON.stringify(users));
-
-        return { ...app, status: 'approved', approvedDate: new Date().toISOString() };
+        // update UI
+        const updated = applications.map(app => app.id === application.id ? { ...app, status: 'approved', approvedDate: new Date().toISOString() } : app);
+        setApplications(updated);
+        setFilteredApplications(updated);
+        setSelectedApplication(null);
+        alert('Application approved! Student account created.');
+      } catch (err) {
+        // fallback
+        const updatedApplications = applications.map(app =>
+          app.id === application.id
+            ? { ...app, status: 'approved', approvedDate: new Date().toISOString() }
+            : app
+        );
+        setApplications(updatedApplications);
+        localStorage.setItem('applications', JSON.stringify(updatedApplications));
+        const newUser = {
+          id: application.id,
+          name: `${application.firstName} ${application.lastName}`,
+          email: application.email,
+          role: 'student',
+          program: application.program,
+          level: application.level,
+          phone: application.phone,
+          address: application.address,
+          dateOfBirth: application.dateOfBirth,
+          studentId: `STD${Date.now()}`,
+          avatar: `https://ui-avatars.com/api/?name=${application.firstName}+${application.lastName}&background=10B981&color=fff`,
+          enrolledDate: new Date().toISOString()
+        };
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        setSelectedApplication(null);
+        alert('Application approved (offline). Student account created.');
       }
-      return app;
-    });
-
-    setApplications(updatedApplications);
-    localStorage.setItem('applications', JSON.stringify(updatedApplications));
-    setSelectedApplication(null);
-    alert('Application approved! Student account created.');
+    };
+    update();
   };
 
   const handleReject = (application) => {
-    const updatedApplications = applications.map(app =>
-      app.id === application.id
-        ? { ...app, status: 'rejected', rejectedDate: new Date().toISOString() }
-        : app
-    );
-
-    setApplications(updatedApplications);
-    localStorage.setItem('applications', JSON.stringify(updatedApplications));
-    setSelectedApplication(null);
-    alert('Application rejected.');
+    const update = async () => {
+      try {
+        const res = await fetch(`/api/applications/${application.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'rejected' })
+        });
+        if (!res.ok) throw new Error('API update failed');
+        const updated = applications.map(app => app.id === application.id ? { ...app, status: 'rejected', rejectedDate: new Date().toISOString() } : app);
+        setApplications(updated);
+        setFilteredApplications(updated);
+        setSelectedApplication(null);
+        alert('Application rejected.');
+      } catch (err) {
+        const updatedApplications = applications.map(app =>
+          app.id === application.id
+            ? { ...app, status: 'rejected', rejectedDate: new Date().toISOString() }
+            : app
+        );
+        setApplications(updatedApplications);
+        localStorage.setItem('applications', JSON.stringify(updatedApplications));
+        setSelectedApplication(null);
+        alert('Application rejected (offline).');
+      }
+    };
+    update();
   };
 
   const getProgramLabel = (program) => {
