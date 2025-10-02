@@ -3,58 +3,16 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { BookOpen, Users, Award, Lightbulb, ArrowRight, CheckCircle, Heart, MessageCircle, Image as ImageIcon, Video } from 'lucide-react';
-import { getVisiblePosts, likePost, unlikePost } from '../services/postsService';
-import ImageCarousel from '../components/ImageCarousel';
 import './Home.css';
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
-  const [likedPosts, setLikedPosts] = useState(new Set());
 
   useEffect(() => {
-    loadPosts();
-    // Load liked posts from localStorage
-    const liked = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-    setLikedPosts(new Set(liked));
+    const stored = JSON.parse(localStorage.getItem('posts') || '[]');
+    const visible = stored.filter(p => p.visible !== false);
+    setPosts(visible);
   }, []);
-
-  const loadPosts = async () => {
-    try {
-      const data = await getVisiblePosts();
-      setPosts(data);
-    } catch (error) {
-      console.error('Error loading posts:', error);
-    }
-  };
-
-  const handleLike = async (postId) => {
-    const userId = localStorage.getItem('userId') || `user_${Date.now()}`;
-    if (!localStorage.getItem('userId')) {
-      localStorage.setItem('userId', userId);
-    }
-
-    try {
-      if (likedPosts.has(postId)) {
-        // Unlike
-        await unlikePost(postId, userId);
-        const newLiked = new Set(likedPosts);
-        newLiked.delete(postId);
-        setLikedPosts(newLiked);
-        localStorage.setItem('likedPosts', JSON.stringify([...newLiked]));
-      } else {
-        // Like
-        await likePost(postId, userId);
-        const newLiked = new Set(likedPosts);
-        newLiked.add(postId);
-        setLikedPosts(newLiked);
-        localStorage.setItem('likedPosts', JSON.stringify([...newLiked]));
-      }
-      // Reload posts to get updated counts
-      await loadPosts();
-    } catch (error) {
-      console.error('Error liking post:', error);
-    }
-  };
 
   return (
     <div className="home">
@@ -234,13 +192,11 @@ const Home = () => {
             <div className="home-posts-grid">
               {posts.slice(0, 6).map(post => (
                 <div key={post.id} className="home-post-card card">
-                  {post.images && post.images.length > 0 ? (
-                    <ImageCarousel images={post.images} />
-                  ) : post.imageUrl ? (
+                  {post.imageUrl && (
                     <div className="home-post-image">
                       <img src={post.imageUrl} alt={post.title} />
                     </div>
-                  ) : null}
+                  )}
                   
                   <div className="home-post-content">
                     <div className="home-post-type">
@@ -266,21 +222,13 @@ const Home = () => {
                         })}
                       </span>
                       <div className="post-engagement">
-                        <button 
-                          className={`like-button ${likedPosts.has(post.id) ? 'liked' : ''}`}
-                          onClick={() => handleLike(post.id)}
-                          aria-label={likedPosts.has(post.id) ? 'Unlike' : 'Like'}
-                        >
-                          <Heart 
-                            size={20} 
-                            fill={likedPosts.has(post.id) ? '#EF4444' : 'none'}
-                            color={likedPosts.has(post.id) ? '#EF4444' : 'currentColor'}
-                          />
-                          <span>{post.likes || 0}</span>
-                        </button>
+                        <span>
+                          <Heart size={16} />
+                          {post.likes}
+                        </span>
                         <span>
                           <MessageCircle size={16} />
-                          {post.comments?.length || 0}
+                          {post.comments.length}
                         </span>
                       </div>
                     </div>
@@ -308,27 +256,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-      {/* Posts Section - published by admin */}
-      <section className="posts-home-section">
-        <div className="container">
-          <h2 className="section-title">Latest Posts</h2>
-          {posts.length === 0 ? (
-            <p>No posts yet.</p>
-          ) : (
-            <div className="home-posts-grid">
-              {posts.map(post => (
-                <article key={post.id} className="home-post card">
-                  <h3>{post.title}</h3>
-                  <p className="post-meta">By {post.author} • {new Date(post.date).toLocaleDateString()}</p>
-                  <p style={{ fontSize: post.textSize === 'small' ? '14px' : post.textSize === 'large' ? '18px' : '16px' }}>{post.content}</p>
-                  {post.imageUrl && <img src={post.imageUrl} alt={post.title} className="home-post-image" />}
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
       <Footer />
     </div>
   );

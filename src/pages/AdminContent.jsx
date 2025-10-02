@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Image, Video, MessageSquare, Upload, Trash2, Eye, FileUp, X, Heart } from 'lucide-react';
-import { getPosts, createPost, updatePost, deletePost, togglePostVisibility } from '../services/postsService';
-import ImageCropper from '../components/ImageCropper';
-import ImageCarousel from '../components/ImageCarousel';
+import { Image, Video, MessageSquare, Upload, Trash2, Eye, FileUp } from 'lucide-react';
 import './AdminContent.css';
 
 const AdminContent = () => {
@@ -15,7 +12,6 @@ const AdminContent = () => {
     title: '',
     content: '',
     imageUrl: '',
-    images: [],
     videoUrl: '',
     textSize: 'medium'
   });
@@ -23,29 +19,12 @@ const AdminContent = () => {
   const [editingPostId, setEditingPostId] = useState(null);
   const [editPost, setEditPost] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [imagesToCrop, setImagesToCrop] = useState([]);
-  const [currentCropIndex, setCurrentCropIndex] = useState(0);
-  const [showCropper, setShowCropper] = useState(false);
   const fileInputRef = useRef(null);
-  const multiFileInputRef = useRef(null);
 
   useEffect(() => {
-    loadPosts();
+    const stored = JSON.parse(localStorage.getItem('posts') || '[]');
+    setPosts(stored);
   }, []);
-
-  const loadPosts = async () => {
-    setLoading(true);
-    try {
-      const data = await getPosts();
-      setPosts(data);
-    } catch (error) {
-      console.error('Error loading posts:', error);
-      alert('Failed to load posts');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -67,54 +46,6 @@ const AdminContent = () => {
         reader.readAsText(file);
       }
     }
-  };
-
-  const handleMultipleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const imageFiles = files.filter(file => file.type.startsWith('image/'));
-    
-    if (imageFiles.length === 0) return;
-
-    const imagePromises = imageFiles.map(file => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (event) => resolve(event.target.result);
-        reader.readAsDataURL(file);
-      });
-    });
-
-    Promise.all(imagePromises).then(images => {
-      setImagesToCrop(images);
-      setCurrentCropIndex(0);
-      setShowCropper(true);
-    });
-  };
-
-  const handleCropComplete = (croppedImage) => {
-    const updatedImages = [...newPost.images, croppedImage];
-    setNewPost({...newPost, images: updatedImages, type: 'image'});
-
-    // Move to next image or close cropper
-    if (currentCropIndex < imagesToCrop.length - 1) {
-      setCurrentCropIndex(prev => prev + 1);
-    } else {
-      setShowCropper(false);
-      setImagesToCrop([]);
-      setCurrentCropIndex(0);
-      if (multiFileInputRef.current) multiFileInputRef.current.value = '';
-    }
-  };
-
-  const handleCropCancel = () => {
-    setShowCropper(false);
-    setImagesToCrop([]);
-    setCurrentCropIndex(0);
-    if (multiFileInputRef.current) multiFileInputRef.current.value = '';
-  };
-
-  const removeImage = (index) => {
-    const updatedImages = newPost.images.filter((_, i) => i !== index);
-    setNewPost({...newPost, images: updatedImages});
   };
 
   const validateForm = () => {
@@ -155,53 +86,41 @@ const AdminContent = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     
     if (!validateForm()) {
       return;
     }
     
-    setLoading(true);
-    try {
-      const postData = {
-        ...newPost,
-        textSize: newPost.textSize || 'medium',
-        visible: true,
-        author: 'Admin',
-        fileName: uploadedFile ? uploadedFile.name : null
-      };
+    const post = {
+      id: Date.now(),
+      ...newPost,
+      textSize: newPost.textSize || 'medium',
+      visible: true,
+      author: 'Admin',
+      date: new Date().toISOString(),
+      likes: 0,
+      comments: [],
+      fileName: uploadedFile ? uploadedFile.name : null
+    };
 
-      await createPost(postData);
-      await loadPosts();
-      
-      setNewPost({ type: 'text', title: '', content: '', imageUrl: '', images: [], videoUrl: '', textSize: 'medium' });
-      setUploadedFile(null);
-      setErrors({});
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      if (multiFileInputRef.current) multiFileInputRef.current.value = '';
-      alert('Post created successfully!');
-    } catch (error) {
-      console.error('Error creating post:', error);
-      alert('Failed to create post');
-    } finally {
-      setLoading(false);
-    }
+    const updatedPosts = [post, ...posts];
+    setPosts(updatedPosts);
+    localStorage.setItem('posts', JSON.stringify(updatedPosts));
+    
+    setNewPost({ type: 'text', title: '', content: '', imageUrl: '', videoUrl: '', textSize: 'medium' });
+    setUploadedFile(null);
+    setErrors({});
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    alert('Post created successfully!');
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (window.confirm('Delete this post?')) {
-      setLoading(true);
-      try {
-        await deletePost(id);
-        await loadPosts();
-        alert('Post deleted successfully!');
-      } catch (error) {
-        console.error('Error deleting post:', error);
-        alert('Failed to delete post');
-      } finally {
-        setLoading(false);
-      }
+      const updated = posts.filter(p => p.id !== id);
+      setPosts(updated);
+      localStorage.setItem('posts', JSON.stringify(updated));
     }
   };
 
@@ -239,39 +158,25 @@ const AdminContent = () => {
     return true;
   };
 
-  const saveEdit = async (e) => {
+  const saveEdit = (e) => {
     e.preventDefault();
     
     if (!validateEditForm()) {
       return;
     }
     
-    setLoading(true);
-    try {
-      await updatePost(editingPostId, editPost);
-      await loadPosts();
-      setEditingPostId(null);
-      setEditPost(null);
-      alert('Post updated successfully!');
-    } catch (error) {
-      console.error('Error updating post:', error);
-      alert('Failed to update post');
-    } finally {
-      setLoading(false);
-    }
+    const updated = posts.map(p => (p.id === editingPostId ? { ...p, ...editPost } : p));
+    setPosts(updated);
+    localStorage.setItem('posts', JSON.stringify(updated));
+    setEditingPostId(null);
+    setEditPost(null);
+    alert('Post updated successfully!');
   };
 
-  const handleToggleVisibility = async (id) => {
-    setLoading(true);
-    try {
-      await togglePostVisibility(id);
-      await loadPosts();
-    } catch (error) {
-      console.error('Error toggling visibility:', error);
-      alert('Failed to toggle visibility');
-    } finally {
-      setLoading(false);
-    }
+  const toggleVisibility = (id) => {
+    const updated = posts.map(p => (p.id === id ? { ...p, visible: !p.visible } : p));
+    setPosts(updated);
+    localStorage.setItem('posts', JSON.stringify(updated));
   };
 
   return (
@@ -316,36 +221,17 @@ const AdminContent = () => {
             <div className="form-group">
               <label>
                 <FileUp size={18} />
-                Upload Multiple Images (Optional)
+                Upload File (Optional)
               </label>
               <input
-                ref={multiFileInputRef}
+                ref={fileInputRef}
                 type="file"
-                accept="image/*"
-                multiple
-                onChange={handleMultipleImageUpload}
+                accept="image/*,text/*,.txt,.md"
+                onChange={handleFileUpload}
                 className="file-input"
               />
-              <p className="file-hint">Select multiple images to upload and crop</p>
-              
-              {newPost.images.length > 0 && (
-                <div className="uploaded-images-preview">
-                  <p className="file-info">{newPost.images.length} image(s) uploaded</p>
-                  <div className="images-grid">
-                    {newPost.images.map((img, index) => (
-                      <div key={index} className="preview-image-item">
-                        <img src={img} alt={`Preview ${index + 1}`} />
-                        <button
-                          type="button"
-                          className="remove-image-btn"
-                          onClick={() => removeImage(index)}
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              {uploadedFile && (
+                <p className="file-info">Uploaded: {uploadedFile.name}</p>
               )}
             </div>
 
@@ -445,7 +331,7 @@ const AdminContent = () => {
                       </p>
                     </div>
                     <div className="post-actions">
-                      <button className="btn-icon" onClick={() => handleToggleVisibility(post.id)} title={post.visible ? 'Hide post' : 'Show post'} disabled={loading}>
+                      <button className="btn-icon" onClick={() => toggleVisibility(post.id)} title={post.visible ? 'Hide post' : 'Show post'}>
                         <Eye size={18} />
                       </button>
                       <button className="btn-icon" onClick={() => startEdit(post)} title="Edit post">
@@ -500,17 +386,11 @@ const AdminContent = () => {
                   ) : (
                     <>
                       <p className="post-content" style={{ fontSize: post.textSize === 'small' ? '14px' : post.textSize === 'large' ? '18px' : '16px' }}>{post.content}</p>
-                      
-                      {post.images && post.images.length > 0 && (
-                        <ImageCarousel images={post.images} />
-                      )}
-                      
-                      {post.imageUrl && !post.images?.length && (
+                      {post.imageUrl && (
                         <div className="post-media">
                           <img src={post.imageUrl} alt={post.title} />
                         </div>
                       )}
-                      
                       {post.videoUrl && (
                         <div className="post-media">
                           <div className="video-placeholder">
@@ -519,26 +399,9 @@ const AdminContent = () => {
                           </div>
                         </div>
                       )}
-                      
                       <div className="post-stats">
-                        <div className="likes-section">
-                          <Heart size={18} fill="#EF4444" color="#EF4444" />
-                          <span>{post.likes || 0} likes</span>
-                          {post.likedBy && post.likedBy.length > 0 && (
-                            <div className="liked-by-list">
-                              <p className="liked-by-title">Liked by:</p>
-                              <ul>
-                                {post.likedBy.slice(0, 5).map((userId, idx) => (
-                                  <li key={idx}>{userId}</li>
-                                ))}
-                                {post.likedBy.length > 5 && (
-                                  <li>and {post.likedBy.length - 5} more...</li>
-                                )}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                        <span>{post.comments?.length || 0} comments</span>
+                        <span>{post.likes} likes</span>
+                        <span>{post.comments.length} comments</span>
                       </div>
                     </>
                   )}
@@ -548,14 +411,6 @@ const AdminContent = () => {
           )}
         </div>
       </div>
-
-      {showCropper && imagesToCrop.length > 0 && (
-        <ImageCropper
-          image={imagesToCrop[currentCropIndex]}
-          onCropComplete={handleCropComplete}
-          onCancel={handleCropCancel}
-        />
-      )}
 
       <Footer />
     </div>

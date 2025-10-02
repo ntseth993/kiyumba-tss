@@ -2,9 +2,12 @@ import { neon } from '@neondatabase/serverless';
 
 // Get database URL from environment variable
 // Works in both Vite (browser) and Node.js (scripts)
-const DATABASE_URL = typeof import.meta !== 'undefined' && import.meta.env 
-  ? import.meta.env.VITE_DATABASE_URL 
-  : process.env.VITE_DATABASE_URL;
+function getDatabaseURL() {
+  return (typeof import.meta !== 'undefined' && import.meta.env?.VITE_DATABASE_URL) 
+    || process.env.VITE_DATABASE_URL;
+}
+
+const DATABASE_URL = getDatabaseURL();
 
 if (!DATABASE_URL) {
   console.warn('Database URL not configured. Using localStorage fallback.');
