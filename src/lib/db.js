@@ -25,11 +25,13 @@ export const initDatabase = async () => {
         content TEXT NOT NULL,
         type VARCHAR(20) DEFAULT 'text',
         image_url TEXT,
+        images JSONB DEFAULT '[]',
         video_url TEXT,
         text_size VARCHAR(20) DEFAULT 'medium',
         visible BOOLEAN DEFAULT true,
         author VARCHAR(100) DEFAULT 'Admin',
         likes INTEGER DEFAULT 0,
+        liked_by JSONB DEFAULT '[]',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
