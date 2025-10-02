@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { loginUser } from '../services/authService';
 
 const AuthContext = createContext(null);
 
@@ -23,34 +24,30 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = (email, password) => {
-    // Mock authentication - In production, this would call an API
-    if (email === 'admin@kiyumba.com' && password === 'admin123') {
-      const userData = {
-        id: 1,
-        name: 'Admin User',
-        email: 'admin@kiyumba.com',
-        role: 'admin',
-        avatar: 'https://ui-avatars.com/api/?name=Admin+User&background=4F46E5&color=fff'
-      };
+  const login = async (email, password) => {
+    try {
+      // Check demo accounts first
+      if (email === 'admin@kiyumba.com' && password === 'admin123') {
+        const userData = {
+          id: 1,
+          name: 'Admin User',
+          email: 'admin@kiyumba.com',
+          role: 'admin',
+          avatar: 'https://ui-avatars.com/api/?name=Admin+User&background=4F46E5&color=fff'
+        };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return { success: true, user: userData };
+      }
+
+      // Try to login with database/localStorage
+      const userData = await loginUser(email, password);
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       return { success: true, user: userData };
-    } else if (email === 'student@kiyumba.com' && password === 'student123') {
-      const userData = {
-        id: 2,
-        name: 'John Doe',
-        email: 'student@kiyumba.com',
-        role: 'student',
-        studentId: 'STD2024001',
-        grade: '10th Grade',
-        avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=10B981&color=fff'
-      };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return { success: true, user: userData };
+    } catch (error) {
+      return { success: false, error: error.message || 'Invalid credentials' };
     }
-    return { success: false, error: 'Invalid credentials' };
   };
 
   const logout = () => {

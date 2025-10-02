@@ -8,6 +8,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminApplications from './pages/AdminApplications';
 import AdminUserManagement from './pages/AdminUserManagement';
 import AdminContent from './pages/AdminContent';
+import AdminSettings from './pages/AdminSettings';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import './App.css';
@@ -81,6 +82,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="admin">
               <AdminContent />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminSettings />
             </ProtectedRoute>
           }
         />

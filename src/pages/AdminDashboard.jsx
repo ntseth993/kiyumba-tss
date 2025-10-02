@@ -68,7 +68,7 @@ const AdminDashboard = () => {
               <p>Administrator Dashboard</p>
             </div>
           </div>
-          <button className="btn btn-primary">
+          <button className="btn btn-primary" onClick={() => navigate('/admin/settings')}>
             <Settings size={18} />
             Settings
           </button>

@@ -18,7 +18,7 @@ const Login = () => {
     setError('');
     setLoading(true);
 
-    const result = login(email, password);
+    const result = await login(email, password);
     
     if (result.success) {
       // Navigate based on user role

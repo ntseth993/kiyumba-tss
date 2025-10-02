@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GraduationCap, User, Mail, Lock, Phone, MapPin, ArrowLeft, Calendar } from 'lucide-react';
+import { registerUser } from '../services/authService';
 import './Register.css';
 
 const Register = () => {
@@ -68,28 +69,20 @@ const Register = () => {
       return;
     }
 
-    // In production, this would send to an API
-    const application = {
-      id: Date.now(),
-      ...formData,
-      status: 'pending',
-      appliedDate: new Date().toISOString(),
-      role: 'applicant'
-    };
+    try {
+      // Register user in database/localStorage
+      await registerUser(formData);
+      
+      setLoading(false);
+      setSuccess(true);
 
-    // Store in localStorage (in production, send to backend)
-    const existingApplications = JSON.parse(localStorage.getItem('applications') || '[]');
-    existingApplications.push(application);
-    localStorage.setItem('applications', JSON.stringify(existingApplications));
-
-    console.log('Application submitted:', application);
-    
-    setLoading(false);
-    setSuccess(true);
-
-    setTimeout(() => {
-      navigate('/login');
-    }, 3000);
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
+    } catch (error) {
+      setError(error.message || 'Registration failed. Please try again.');
+      setLoading(false);
+    }
   };
 
   if (success) {
