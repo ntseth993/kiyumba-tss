@@ -11,7 +11,30 @@ app.use(express.json());
 app.get('/api/applications', async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM applications ORDER BY applied_date DESC');
-    res.json(result.rows);
+    // Normalize rows so frontend (which expects first_name, last_name, applied_date)
+    // works whether the DB has separate first/last columns or a single full_name.
+    const normalized = result.rows.map(r => {
+      // determine applied_date field
+      const applied_date = r.applied_date || r.created_at || r.appliedAt || null;
+
+      // determine first and last name
+      let first_name = r.first_name;
+      let last_name = r.last_name;
+      if (!first_name && r.full_name) {
+        const parts = String(r.full_name).trim().split(/\s+/);
+        first_name = parts.shift() || '';
+        last_name = parts.join(' ') || '';
+      }
+
+      return {
+        ...r,
+        first_name: first_name || '',
+        last_name: last_name || '',
+        applied_date
+      };
+    });
+
+    res.json(normalized);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database error' });
