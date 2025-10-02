@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node index.js",
+  "start": "node run-migrations.js && node index.js",
     "dev": "nodemon index.js",
     "migrate": "node run-migrations.js",
     "seed": "node seed.js"
