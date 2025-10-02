@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Image, Video, MessageSquare, Upload, Trash2, Eye } from 'lucide-react';
+import { Image, Video, MessageSquare, Upload, Trash2, Eye, FileUp } from 'lucide-react';
 import './AdminContent.css';
 
 const AdminContent = () => {
@@ -12,30 +12,107 @@ const AdminContent = () => {
     title: '',
     content: '',
     imageUrl: '',
-    videoUrl: ''
+    videoUrl: '',
+    textSize: 'medium'
   });
+  const [errors, setErrors] = useState({});
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editPost, setEditPost] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('posts') || '[]');
     setPosts(stored);
   }, []);
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const content = event.target.result;
+        if (file.type.startsWith('image/')) {
+          setNewPost({...newPost, type: 'image', imageUrl: content});
+        } else if (file.type.startsWith('text/')) {
+          setNewPost({...newPost, content: content});
+        }
+        setUploadedFile(file);
+      };
+      
+      if (file.type.startsWith('image/')) {
+        reader.readAsDataURL(file);
+      } else if (file.type.startsWith('text/')) {
+        reader.readAsText(file);
+      }
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!newPost.title.trim()) {
+      newErrors.title = 'Title is required';
+    } else if (newPost.title.length < 3) {
+      newErrors.title = 'Title must be at least 3 characters';
+    } else if (newPost.title.length > 100) {
+      newErrors.title = 'Title must be less than 100 characters';
+    }
+    
+    if (!newPost.content.trim()) {
+      newErrors.content = 'Content is required';
+    } else if (newPost.content.length < 10) {
+      newErrors.content = 'Content must be at least 10 characters';
+    }
+    
+    if (newPost.type === 'image' && newPost.imageUrl && !isValidUrl(newPost.imageUrl)) {
+      newErrors.imageUrl = 'Please enter a valid URL';
+    }
+    
+    if (newPost.type === 'video' && newPost.videoUrl && !isValidUrl(newPost.videoUrl)) {
+      newErrors.videoUrl = 'Please enter a valid URL';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     const post = {
       id: Date.now(),
       ...newPost,
+      textSize: newPost.textSize || 'medium',
+      visible: true,
       author: 'Admin',
       date: new Date().toISOString(),
       likes: 0,
-      comments: []
+      comments: [],
+      fileName: uploadedFile ? uploadedFile.name : null
     };
 
     const updatedPosts = [post, ...posts];
     setPosts(updatedPosts);
     localStorage.setItem('posts', JSON.stringify(updatedPosts));
     
-    setNewPost({ type: 'text', title: '', content: '', imageUrl: '', videoUrl: '' });
+    setNewPost({ type: 'text', title: '', content: '', imageUrl: '', videoUrl: '', textSize: 'medium' });
+    setUploadedFile(null);
+    setErrors({});
+    if (fileInputRef.current) fileInputRef.current.value = '';
     alert('Post created successfully!');
   };
 
@@ -45,6 +122,61 @@ const AdminContent = () => {
       setPosts(updated);
       localStorage.setItem('posts', JSON.stringify(updated));
     }
+  };
+
+  const startEdit = (post) => {
+    setEditingPostId(post.id);
+    setEditPost({ ...post });
+  };
+
+  const cancelEdit = () => {
+    setEditingPostId(null);
+    setEditPost(null);
+  };
+
+  const handleEditChange = (field, value) => {
+    setEditPost(prev => ({ ...prev, [field]: value }));
+  };
+
+  const validateEditForm = () => {
+    if (!editPost.title.trim() || editPost.title.length < 3) {
+      alert('Title must be at least 3 characters');
+      return false;
+    }
+    if (!editPost.content.trim() || editPost.content.length < 10) {
+      alert('Content must be at least 10 characters');
+      return false;
+    }
+    if (editPost.imageUrl && !isValidUrl(editPost.imageUrl)) {
+      alert('Please enter a valid image URL');
+      return false;
+    }
+    if (editPost.videoUrl && !isValidUrl(editPost.videoUrl)) {
+      alert('Please enter a valid video URL');
+      return false;
+    }
+    return true;
+  };
+
+  const saveEdit = (e) => {
+    e.preventDefault();
+    
+    if (!validateEditForm()) {
+      return;
+    }
+    
+    const updated = posts.map(p => (p.id === editingPostId ? { ...p, ...editPost } : p));
+    setPosts(updated);
+    localStorage.setItem('posts', JSON.stringify(updated));
+    setEditingPostId(null);
+    setEditPost(null);
+    alert('Post updated successfully!');
+  };
+
+  const toggleVisibility = (id) => {
+    const updated = posts.map(p => (p.id === id ? { ...p, visible: !p.visible } : p));
+    setPosts(updated);
+    localStorage.setItem('posts', JSON.stringify(updated));
   };
 
   return (
@@ -87,6 +219,23 @@ const AdminContent = () => {
 
           <form onSubmit={handleSubmit} className="post-form">
             <div className="form-group">
+              <label>
+                <FileUp size={18} />
+                Upload File (Optional)
+              </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,text/*,.txt,.md"
+                onChange={handleFileUpload}
+                className="file-input"
+              />
+              {uploadedFile && (
+                <p className="file-info">Uploaded: {uploadedFile.name}</p>
+              )}
+            </div>
+
+            <div className="form-group">
               <label>Title *</label>
               <input
                 type="text"
@@ -94,7 +243,9 @@ const AdminContent = () => {
                 onChange={(e) => setNewPost({...newPost, title: e.target.value})}
                 placeholder="Enter post title"
                 required
+                maxLength="100"
               />
+              {errors.title && <span className="error-text">{errors.title}</span>}
             </div>
 
             <div className="form-group">
@@ -106,6 +257,19 @@ const AdminContent = () => {
                 rows="6"
                 required
               ></textarea>
+              {errors.content && <span className="error-text">{errors.content}</span>}
+            </div>
+
+            <div className="form-group">
+              <label>Text Size</label>
+              <select
+                value={newPost.textSize}
+                onChange={(e) => setNewPost({...newPost, textSize: e.target.value})}
+              >
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+              </select>
             </div>
 
             {newPost.type === 'image' && (
@@ -117,6 +281,7 @@ const AdminContent = () => {
                   onChange={(e) => setNewPost({...newPost, imageUrl: e.target.value})}
                   placeholder="https://example.com/image.jpg"
                 />
+                {errors.imageUrl && <span className="error-text">{errors.imageUrl}</span>}
               </div>
             )}
 
@@ -129,6 +294,7 @@ const AdminContent = () => {
                   onChange={(e) => setNewPost({...newPost, videoUrl: e.target.value})}
                   placeholder="https://youtube.com/watch?v=..."
                 />
+                {errors.videoUrl && <span className="error-text">{errors.videoUrl}</span>}
               </div>
             )}
 
@@ -159,40 +325,86 @@ const AdminContent = () => {
                         {post.type === 'text' && <MessageSquare size={14} />}
                         {post.type}
                       </span>
-                      <h3>{post.title}</h3>
+                      <h3>{post.title} {post.visible === false && <span className="badge hidden">Hidden</span>}</h3>
                       <p className="post-meta">
                         By {post.author} • {new Date(post.date).toLocaleDateString()}
                       </p>
                     </div>
-                    <button
-                      className="btn-icon delete"
-                      onClick={() => handleDelete(post.id)}
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                  
-                  <p className="post-content">{post.content}</p>
-                  
-                  {post.imageUrl && (
-                    <div className="post-media">
-                      <img src={post.imageUrl} alt={post.title} />
+                    <div className="post-actions">
+                      <button className="btn-icon" onClick={() => toggleVisibility(post.id)} title={post.visible ? 'Hide post' : 'Show post'}>
+                        <Eye size={18} />
+                      </button>
+                      <button className="btn-icon" onClick={() => startEdit(post)} title="Edit post">
+                        Edit
+                      </button>
+                      <button
+                        className="btn-icon delete"
+                        onClick={() => handleDelete(post.id)}
+                        title="Delete post"
+                      >
+                        <Trash2 size={18} />
+                      </button>
                     </div>
-                  )}
-                  
-                  {post.videoUrl && (
-                    <div className="post-media">
-                      <div className="video-placeholder">
-                        <Video size={48} />
-                        <p>Video: {post.videoUrl}</p>
+                  </div>
+
+                  {editingPostId === post.id ? (
+                    <form className="edit-post-form" onSubmit={saveEdit}>
+                      <div className="form-group">
+                        <label>Title</label>
+                        <input type="text" value={editPost.title} onChange={(e) => handleEditChange('title', e.target.value)} required />
                       </div>
-                    </div>
+                      <div className="form-group">
+                        <label>Content</label>
+                        <textarea rows="5" value={editPost.content} onChange={(e) => handleEditChange('content', e.target.value)} required />
+                      </div>
+                      <div className="form-group">
+                        <label>Image URL</label>
+                        <input type="url" value={editPost.imageUrl || ''} onChange={(e) => handleEditChange('imageUrl', e.target.value)} />
+                      </div>
+                      <div className="form-group">
+                        <label>Video URL</label>
+                        <input type="url" value={editPost.videoUrl || ''} onChange={(e) => handleEditChange('videoUrl', e.target.value)} />
+                      </div>
+                      <div className="form-group">
+                        <label>Text Size</label>
+                        <select value={editPost.textSize || 'medium'} onChange={(e) => handleEditChange('textSize', e.target.value)}>
+                          <option value="small">Small</option>
+                          <option value="medium">Medium</option>
+                          <option value="large">Large</option>
+                        </select>
+                      </div>
+                      <div className="form-group form-row">
+                        <label>
+                          <input type="checkbox" checked={editPost.visible !== false} onChange={(e) => handleEditChange('visible', e.target.checked)} /> Visible
+                        </label>
+                      </div>
+                      <div className="form-actions">
+                        <button type="submit" className="btn btn-primary">Save</button>
+                        <button type="button" className="btn btn-outline" onClick={cancelEdit}>Cancel</button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <p className="post-content" style={{ fontSize: post.textSize === 'small' ? '14px' : post.textSize === 'large' ? '18px' : '16px' }}>{post.content}</p>
+                      {post.imageUrl && (
+                        <div className="post-media">
+                          <img src={post.imageUrl} alt={post.title} />
+                        </div>
+                      )}
+                      {post.videoUrl && (
+                        <div className="post-media">
+                          <div className="video-placeholder">
+                            <Video size={48} />
+                            <p>Video: {post.videoUrl}</p>
+                          </div>
+                        </div>
+                      )}
+                      <div className="post-stats">
+                        <span>{post.likes} likes</span>
+                        <span>{post.comments.length} comments</span>
+                      </div>
+                    </>
                   )}
-                  
-                  <div className="post-stats">
-                    <span>{post.likes} likes</span>
-                    <span>{post.comments.length} comments</span>
-                  </div>
                 </div>
               ))}
             </div>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -8,12 +9,20 @@ import './AdminDashboard.css';
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [postStats, setPostStats] = useState({ total: 0, visible: 0, hidden: 0 });
+
+  useEffect(() => {
+    const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+    const visible = posts.filter(p => p.visible !== false).length;
+    const hidden = posts.filter(p => p.visible === false).length;
+    setPostStats({ total: posts.length, visible, hidden });
+  }, []);
 
   const stats = [
-    { id: 1, label: 'Total Students', value: '1,524', icon: Users, color: '#4F46E5', change: '+12%' },
-    { id: 2, label: 'Total Teachers', value: '124', icon: UserCheck, color: '#10B981', change: '+5%' },
-    { id: 3, label: 'Active Courses', value: '48', icon: BookOpen, color: '#F59E0B', change: '+8%' },
-    { id: 4, label: 'Revenue', value: '$125,450', icon: DollarSign, color: '#EF4444', change: '+15%' },
+    { id: 1, label: 'Total Posts', value: postStats.total.toString(), icon: FileText, color: '#4F46E5', change: `${postStats.visible} visible` },
+    { id: 2, label: 'Total Students', value: '1,524', icon: Users, color: '#10B981', change: '+12%' },
+    { id: 3, label: 'Total Teachers', value: '124', icon: UserCheck, color: '#F59E0B', change: '+5%' },
+    { id: 4, label: 'Active Courses', value: '48', icon: BookOpen, color: '#EF4444', change: '+8%' },
   ];
 
   const recentStudents = [

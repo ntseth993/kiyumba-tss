@@ -109,29 +109,7 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="demo-credentials">
-            <p className="demo-title">Demo Credentials:</p>
-            <div className="demo-buttons">
-              <button 
-                className="btn btn-outline demo-btn"
-                onClick={() => fillDemoCredentials('admin')}
-                type="button"
-              >
-                Admin Demo
-              </button>
-              <button 
-                className="btn btn-outline demo-btn"
-                onClick={() => fillDemoCredentials('student')}
-                type="button"
-              >
-                Student Demo
-              </button>
-            </div>
-            <div className="demo-info">
-              <p><strong>Admin:</strong> admin@kiyumba.com / admin123</p>
-              <p><strong>Student:</strong> student@kiyumba.com / student123</p>
-            </div>
-          </div>
+          {/* Demo credentials hidden for production */}
         </div>
       </div>
     </div>

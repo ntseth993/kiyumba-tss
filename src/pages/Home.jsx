@@ -1,10 +1,19 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { BookOpen, Users, Award, Lightbulb, ArrowRight, CheckCircle } from 'lucide-react';
+import { BookOpen, Users, Award, Lightbulb, ArrowRight, CheckCircle, Heart, MessageCircle, Image as ImageIcon, Video } from 'lucide-react';
 import './Home.css';
 
 const Home = () => {
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem('posts') || '[]');
+    const visible = stored.filter(p => p.visible !== false);
+    setPosts(visible);
+  }, []);
+
   return (
     <div className="home">
       <Navbar />
@@ -171,6 +180,66 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Posts Section */}
+      {posts.length > 0 && (
+        <section className="posts-section-home">
+          <div className="container">
+            <h2 className="section-title">Latest News & Updates</h2>
+            <p className="section-subtitle">
+              Stay informed with the latest announcements and updates from Kiyumba
+            </p>
+
+            <div className="home-posts-grid">
+              {posts.slice(0, 6).map(post => (
+                <div key={post.id} className="home-post-card card">
+                  {post.imageUrl && (
+                    <div className="home-post-image">
+                      <img src={post.imageUrl} alt={post.title} />
+                    </div>
+                  )}
+                  
+                  <div className="home-post-content">
+                    <div className="home-post-type">
+                      {post.type === 'image' && <ImageIcon size={16} />}
+                      {post.type === 'video' && <Video size={16} />}
+                      <span>{post.type}</span>
+                    </div>
+                    
+                    <h3 style={{ fontSize: post.textSize === 'small' ? '1rem' : post.textSize === 'large' ? '1.5rem' : '1.25rem' }}>
+                      {post.title}
+                    </h3>
+                    
+                    <p className="home-post-text" style={{ fontSize: post.textSize === 'small' ? '0.875rem' : post.textSize === 'large' ? '1.125rem' : '1rem' }}>
+                      {post.content.length > 150 ? `${post.content.substring(0, 150)}...` : post.content}
+                    </p>
+                    
+                    <div className="home-post-meta">
+                      <span className="post-date">
+                        {new Date(post.date).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
+                      </span>
+                      <div className="post-engagement">
+                        <span>
+                          <Heart size={16} />
+                          {post.likes}
+                        </span>
+                        <span>
+                          <MessageCircle size={16} />
+                          {post.comments.length}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* CTA Section */}
       <section className="cta-section">
         <div className="container">
@@ -185,6 +254,26 @@ const Home = () => {
               <ArrowRight size={20} />
             </Link>
           </div>
+        </div>
+      </section>
+      {/* Posts Section - published by admin */}
+      <section className="posts-home-section">
+        <div className="container">
+          <h2 className="section-title">Latest Posts</h2>
+          {posts.length === 0 ? (
+            <p>No posts yet.</p>
+          ) : (
+            <div className="home-posts-grid">
+              {posts.map(post => (
+                <article key={post.id} className="home-post card">
+                  <h3>{post.title}</h3>
+                  <p className="post-meta">By {post.author} • {new Date(post.date).toLocaleDateString()}</p>
+                  <p style={{ fontSize: post.textSize === 'small' ? '14px' : post.textSize === 'large' ? '18px' : '16px' }}>{post.content}</p>
+                  {post.imageUrl && <img src={post.imageUrl} alt={post.title} className="home-post-image" />}
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
