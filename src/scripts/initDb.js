@@ -1,4 +1,8 @@
+import dotenv from 'dotenv';
 import { initDatabase } from '../lib/db.js';
+
+// Load environment variables from .env file
+dotenv.config();
 
 // Run database initialization
 console.log('Initializing database...');
