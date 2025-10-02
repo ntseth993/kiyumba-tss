@@ -1,5 +1,4 @@
-cd 'C:\Users\SETH''S\Desktop\kiyumba react\server'
-npm installCREATE TABLE IF NOT EXISTS applications (
+CREATE TABLE IF NOT EXISTS applications (
   id SERIAL PRIMARY KEY,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,

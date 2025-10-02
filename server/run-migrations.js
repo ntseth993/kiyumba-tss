@@ -4,8 +4,9 @@ const db = require('./db');
 
 async function run() {
   try {
-    const sql = fs.readFileSync(path.join(__dirname, 'migrations', 'create_applications_table.sql'), 'utf8');
-    await db.query(sql);
+  let sql = fs.readFileSync(path.join(__dirname, 'migrations', 'create_applications_table.sql'), 'utf8');
+  console.log('MIGRATION DEBUG: sql preview=', sql.slice(0,200));
+  await db.query(sql);
     console.log('Migrations applied');
     process.exit(0);
   } catch (err) {
