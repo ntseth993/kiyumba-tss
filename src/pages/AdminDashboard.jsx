@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Users, BookOpen, Award, DollarSign, TrendingUp, UserCheck, Calendar, Settings, FileText, Image } from 'lucide-react';
+import { getPosts } from '../services/postsService';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -12,11 +13,19 @@ const AdminDashboard = () => {
   const [postStats, setPostStats] = useState({ total: 0, visible: 0, hidden: 0 });
 
   useEffect(() => {
-    const posts = JSON.parse(localStorage.getItem('posts') || '[]');
-    const visible = posts.filter(p => p.visible !== false).length;
-    const hidden = posts.filter(p => p.visible === false).length;
-    setPostStats({ total: posts.length, visible, hidden });
+    loadPostStats();
   }, []);
+
+  const loadPostStats = async () => {
+    try {
+      const posts = await getPosts();
+      const visible = posts.filter(p => p.visible !== false).length;
+      const hidden = posts.filter(p => p.visible === false).length;
+      setPostStats({ total: posts.length, visible, hidden });
+    } catch (error) {
+      console.error('Error loading post stats:', error);
+    }
+  };
 
   const stats = [
     { id: 1, label: 'Total Posts', value: postStats.total.toString(), icon: FileText, color: '#4F46E5', change: `${postStats.visible} visible` },

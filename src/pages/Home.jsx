@@ -3,16 +3,24 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { BookOpen, Users, Award, Lightbulb, ArrowRight, CheckCircle, Heart, MessageCircle, Image as ImageIcon, Video } from 'lucide-react';
+import { getVisiblePosts } from '../services/postsService';
 import './Home.css';
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('posts') || '[]');
-    const visible = stored.filter(p => p.visible !== false);
-    setPosts(visible);
+    loadPosts();
   }, []);
+
+  const loadPosts = async () => {
+    try {
+      const data = await getVisiblePosts();
+      setPosts(data);
+    } catch (error) {
+      console.error('Error loading posts:', error);
+    }
+  };
 
   return (
     <div className="home">

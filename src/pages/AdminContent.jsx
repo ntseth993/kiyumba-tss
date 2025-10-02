@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Image, Video, MessageSquare, Upload, Trash2, Eye, FileUp } from 'lucide-react';
+import { getPosts, createPost, updatePost, deletePost, togglePostVisibility } from '../services/postsService';
 import './AdminContent.css';
 
 const AdminContent = () => {
@@ -19,12 +20,25 @@ const AdminContent = () => {
   const [editingPostId, setEditingPostId] = useState(null);
   const [editPost, setEditPost] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('posts') || '[]');
-    setPosts(stored);
+    loadPosts();
   }, []);
+
+  const loadPosts = async () => {
+    setLoading(true);
+    try {
+      const data = await getPosts();
+      setPosts(data);
+    } catch (error) {
+      console.error('Error loading posts:', error);
+      alert('Failed to load posts');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -86,41 +100,52 @@ const AdminContent = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) {
       return;
     }
     
-    const post = {
-      id: Date.now(),
-      ...newPost,
-      textSize: newPost.textSize || 'medium',
-      visible: true,
-      author: 'Admin',
-      date: new Date().toISOString(),
-      likes: 0,
-      comments: [],
-      fileName: uploadedFile ? uploadedFile.name : null
-    };
+    setLoading(true);
+    try {
+      const postData = {
+        ...newPost,
+        textSize: newPost.textSize || 'medium',
+        visible: true,
+        author: 'Admin',
+        fileName: uploadedFile ? uploadedFile.name : null
+      };
 
-    const updatedPosts = [post, ...posts];
-    setPosts(updatedPosts);
-    localStorage.setItem('posts', JSON.stringify(updatedPosts));
-    
-    setNewPost({ type: 'text', title: '', content: '', imageUrl: '', videoUrl: '', textSize: 'medium' });
-    setUploadedFile(null);
-    setErrors({});
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    alert('Post created successfully!');
+      await createPost(postData);
+      await loadPosts();
+      
+      setNewPost({ type: 'text', title: '', content: '', imageUrl: '', videoUrl: '', textSize: 'medium' });
+      setUploadedFile(null);
+      setErrors({});
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      alert('Post created successfully!');
+    } catch (error) {
+      console.error('Error creating post:', error);
+      alert('Failed to create post');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Delete this post?')) {
-      const updated = posts.filter(p => p.id !== id);
-      setPosts(updated);
-      localStorage.setItem('posts', JSON.stringify(updated));
+      setLoading(true);
+      try {
+        await deletePost(id);
+        await loadPosts();
+        alert('Post deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Failed to delete post');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -158,25 +183,39 @@ const AdminContent = () => {
     return true;
   };
 
-  const saveEdit = (e) => {
+  const saveEdit = async (e) => {
     e.preventDefault();
     
     if (!validateEditForm()) {
       return;
     }
     
-    const updated = posts.map(p => (p.id === editingPostId ? { ...p, ...editPost } : p));
-    setPosts(updated);
-    localStorage.setItem('posts', JSON.stringify(updated));
-    setEditingPostId(null);
-    setEditPost(null);
-    alert('Post updated successfully!');
+    setLoading(true);
+    try {
+      await updatePost(editingPostId, editPost);
+      await loadPosts();
+      setEditingPostId(null);
+      setEditPost(null);
+      alert('Post updated successfully!');
+    } catch (error) {
+      console.error('Error updating post:', error);
+      alert('Failed to update post');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const toggleVisibility = (id) => {
-    const updated = posts.map(p => (p.id === id ? { ...p, visible: !p.visible } : p));
-    setPosts(updated);
-    localStorage.setItem('posts', JSON.stringify(updated));
+  const handleToggleVisibility = async (id) => {
+    setLoading(true);
+    try {
+      await togglePostVisibility(id);
+      await loadPosts();
+    } catch (error) {
+      console.error('Error toggling visibility:', error);
+      alert('Failed to toggle visibility');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -331,7 +370,7 @@ const AdminContent = () => {
                       </p>
                     </div>
                     <div className="post-actions">
-                      <button className="btn-icon" onClick={() => toggleVisibility(post.id)} title={post.visible ? 'Hide post' : 'Show post'}>
+                      <button className="btn-icon" onClick={() => handleToggleVisibility(post.id)} title={post.visible ? 'Hide post' : 'Show post'} disabled={loading}>
                         <Eye size={18} />
                       </button>
                       <button className="btn-icon" onClick={() => startEdit(post)} title="Edit post">
