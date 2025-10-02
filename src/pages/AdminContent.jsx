@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Image, Video, MessageSquare, Upload, Trash2, Eye, FileUp } from 'lucide-react';
+import { Image, Video, MessageSquare, Upload, Trash2, Eye, FileUp, X, Heart } from 'lucide-react';
 import { getPosts, createPost, updatePost, deletePost, togglePostVisibility } from '../services/postsService';
+import ImageCropper from '../components/ImageCropper';
+import ImageCarousel from '../components/ImageCarousel';
 import './AdminContent.css';
 
 const AdminContent = () => {
@@ -13,6 +15,7 @@ const AdminContent = () => {
     title: '',
     content: '',
     imageUrl: '',
+    images: [],
     videoUrl: '',
     textSize: 'medium'
   });
@@ -21,7 +24,11 @@ const AdminContent = () => {
   const [editPost, setEditPost] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [imagesToCrop, setImagesToCrop] = useState([]);
+  const [currentCropIndex, setCurrentCropIndex] = useState(0);
+  const [showCropper, setShowCropper] = useState(false);
   const fileInputRef = useRef(null);
+  const multiFileInputRef = useRef(null);
 
   useEffect(() => {
     loadPosts();
@@ -60,6 +67,54 @@ const AdminContent = () => {
         reader.readAsText(file);
       }
     }
+  };
+
+  const handleMultipleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (imageFiles.length === 0) return;
+
+    const imagePromises = imageFiles.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(event.target.result);
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(imagePromises).then(images => {
+      setImagesToCrop(images);
+      setCurrentCropIndex(0);
+      setShowCropper(true);
+    });
+  };
+
+  const handleCropComplete = (croppedImage) => {
+    const updatedImages = [...newPost.images, croppedImage];
+    setNewPost({...newPost, images: updatedImages, type: 'image'});
+
+    // Move to next image or close cropper
+    if (currentCropIndex < imagesToCrop.length - 1) {
+      setCurrentCropIndex(prev => prev + 1);
+    } else {
+      setShowCropper(false);
+      setImagesToCrop([]);
+      setCurrentCropIndex(0);
+      if (multiFileInputRef.current) multiFileInputRef.current.value = '';
+    }
+  };
+
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setImagesToCrop([]);
+    setCurrentCropIndex(0);
+    if (multiFileInputRef.current) multiFileInputRef.current.value = '';
+  };
+
+  const removeImage = (index) => {
+    const updatedImages = newPost.images.filter((_, i) => i !== index);
+    setNewPost({...newPost, images: updatedImages});
   };
 
   const validateForm = () => {
@@ -120,10 +175,11 @@ const AdminContent = () => {
       await createPost(postData);
       await loadPosts();
       
-      setNewPost({ type: 'text', title: '', content: '', imageUrl: '', videoUrl: '', textSize: 'medium' });
+      setNewPost({ type: 'text', title: '', content: '', imageUrl: '', images: [], videoUrl: '', textSize: 'medium' });
       setUploadedFile(null);
       setErrors({});
       if (fileInputRef.current) fileInputRef.current.value = '';
+      if (multiFileInputRef.current) multiFileInputRef.current.value = '';
       alert('Post created successfully!');
     } catch (error) {
       console.error('Error creating post:', error);
@@ -260,17 +316,36 @@ const AdminContent = () => {
             <div className="form-group">
               <label>
                 <FileUp size={18} />
-                Upload File (Optional)
+                Upload Multiple Images (Optional)
               </label>
               <input
-                ref={fileInputRef}
+                ref={multiFileInputRef}
                 type="file"
-                accept="image/*,text/*,.txt,.md"
-                onChange={handleFileUpload}
+                accept="image/*"
+                multiple
+                onChange={handleMultipleImageUpload}
                 className="file-input"
               />
-              {uploadedFile && (
-                <p className="file-info">Uploaded: {uploadedFile.name}</p>
+              <p className="file-hint">Select multiple images to upload and crop</p>
+              
+              {newPost.images.length > 0 && (
+                <div className="uploaded-images-preview">
+                  <p className="file-info">{newPost.images.length} image(s) uploaded</p>
+                  <div className="images-grid">
+                    {newPost.images.map((img, index) => (
+                      <div key={index} className="preview-image-item">
+                        <img src={img} alt={`Preview ${index + 1}`} />
+                        <button
+                          type="button"
+                          className="remove-image-btn"
+                          onClick={() => removeImage(index)}
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
 
@@ -425,11 +500,17 @@ const AdminContent = () => {
                   ) : (
                     <>
                       <p className="post-content" style={{ fontSize: post.textSize === 'small' ? '14px' : post.textSize === 'large' ? '18px' : '16px' }}>{post.content}</p>
-                      {post.imageUrl && (
+                      
+                      {post.images && post.images.length > 0 && (
+                        <ImageCarousel images={post.images} />
+                      )}
+                      
+                      {post.imageUrl && !post.images?.length && (
                         <div className="post-media">
                           <img src={post.imageUrl} alt={post.title} />
                         </div>
                       )}
+                      
                       {post.videoUrl && (
                         <div className="post-media">
                           <div className="video-placeholder">
@@ -438,9 +519,26 @@ const AdminContent = () => {
                           </div>
                         </div>
                       )}
+                      
                       <div className="post-stats">
-                        <span>{post.likes} likes</span>
-                        <span>{post.comments.length} comments</span>
+                        <div className="likes-section">
+                          <Heart size={18} fill="#EF4444" color="#EF4444" />
+                          <span>{post.likes || 0} likes</span>
+                          {post.likedBy && post.likedBy.length > 0 && (
+                            <div className="liked-by-list">
+                              <p className="liked-by-title">Liked by:</p>
+                              <ul>
+                                {post.likedBy.slice(0, 5).map((userId, idx) => (
+                                  <li key={idx}>{userId}</li>
+                                ))}
+                                {post.likedBy.length > 5 && (
+                                  <li>and {post.likedBy.length - 5} more...</li>
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                        <span>{post.comments?.length || 0} comments</span>
                       </div>
                     </>
                   )}
@@ -450,6 +548,14 @@ const AdminContent = () => {
           )}
         </div>
       </div>
+
+      {showCropper && imagesToCrop.length > 0 && (
+        <ImageCropper
+          image={imagesToCrop[currentCropIndex]}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+        />
+      )}
 
       <Footer />
     </div>

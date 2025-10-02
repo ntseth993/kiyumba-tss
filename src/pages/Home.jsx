@@ -3,14 +3,19 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { BookOpen, Users, Award, Lightbulb, ArrowRight, CheckCircle, Heart, MessageCircle, Image as ImageIcon, Video } from 'lucide-react';
-import { getVisiblePosts } from '../services/postsService';
+import { getVisiblePosts, likePost, unlikePost } from '../services/postsService';
+import ImageCarousel from '../components/ImageCarousel';
 import './Home.css';
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
+  const [likedPosts, setLikedPosts] = useState(new Set());
 
   useEffect(() => {
     loadPosts();
+    // Load liked posts from localStorage
+    const liked = JSON.parse(localStorage.getItem('likedPosts') || '[]');
+    setLikedPosts(new Set(liked));
   }, []);
 
   const loadPosts = async () => {
@@ -19,6 +24,35 @@ const Home = () => {
       setPosts(data);
     } catch (error) {
       console.error('Error loading posts:', error);
+    }
+  };
+
+  const handleLike = async (postId) => {
+    const userId = localStorage.getItem('userId') || `user_${Date.now()}`;
+    if (!localStorage.getItem('userId')) {
+      localStorage.setItem('userId', userId);
+    }
+
+    try {
+      if (likedPosts.has(postId)) {
+        // Unlike
+        await unlikePost(postId, userId);
+        const newLiked = new Set(likedPosts);
+        newLiked.delete(postId);
+        setLikedPosts(newLiked);
+        localStorage.setItem('likedPosts', JSON.stringify([...newLiked]));
+      } else {
+        // Like
+        await likePost(postId, userId);
+        const newLiked = new Set(likedPosts);
+        newLiked.add(postId);
+        setLikedPosts(newLiked);
+        localStorage.setItem('likedPosts', JSON.stringify([...newLiked]));
+      }
+      // Reload posts to get updated counts
+      await loadPosts();
+    } catch (error) {
+      console.error('Error liking post:', error);
     }
   };
 
@@ -200,11 +234,13 @@ const Home = () => {
             <div className="home-posts-grid">
               {posts.slice(0, 6).map(post => (
                 <div key={post.id} className="home-post-card card">
-                  {post.imageUrl && (
+                  {post.images && post.images.length > 0 ? (
+                    <ImageCarousel images={post.images} />
+                  ) : post.imageUrl ? (
                     <div className="home-post-image">
                       <img src={post.imageUrl} alt={post.title} />
                     </div>
-                  )}
+                  ) : null}
                   
                   <div className="home-post-content">
                     <div className="home-post-type">
@@ -230,13 +266,21 @@ const Home = () => {
                         })}
                       </span>
                       <div className="post-engagement">
-                        <span>
-                          <Heart size={16} />
-                          {post.likes}
-                        </span>
+                        <button 
+                          className={`like-button ${likedPosts.has(post.id) ? 'liked' : ''}`}
+                          onClick={() => handleLike(post.id)}
+                          aria-label={likedPosts.has(post.id) ? 'Unlike' : 'Like'}
+                        >
+                          <Heart 
+                            size={20} 
+                            fill={likedPosts.has(post.id) ? '#EF4444' : 'none'}
+                            color={likedPosts.has(post.id) ? '#EF4444' : 'currentColor'}
+                          />
+                          <span>{post.likes || 0}</span>
+                        </button>
                         <span>
                           <MessageCircle size={16} />
-                          {post.comments.length}
+                          {post.comments?.length || 0}
                         </span>
                       </div>
                     </div>
