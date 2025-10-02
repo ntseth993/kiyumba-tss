@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Image, Video, MessageSquare, Upload, Trash2, Eye, FileUp } from 'lucide-react';
+import Cropper from 'react-easy-crop';
+import getCroppedImg from '../utils/cropImage';
 import './AdminContent.css';
 
 const AdminContent = () => {
@@ -19,6 +21,11 @@ const AdminContent = () => {
   const [editingPostId, setEditingPostId] = useState(null);
   const [editPost, setEditPost] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropSrc, setCropSrc] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -33,7 +40,10 @@ const AdminContent = () => {
       reader.onload = (event) => {
         const content = event.target.result;
         if (file.type.startsWith('image/')) {
-          setNewPost({...newPost, type: 'image', imageUrl: content});
+        setNewPost({...newPost, type: 'image', imageUrl: content});
+        // open crop modal
+        setCropSrc(content);
+        setCropModalOpen(true);
         } else if (file.type.startsWith('text/')) {
           setNewPost({...newPost, content: content});
         }
@@ -45,6 +55,22 @@ const AdminContent = () => {
       } else if (file.type.startsWith('text/')) {
         reader.readAsText(file);
       }
+    }
+  };
+
+  const onCropComplete = (croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const applyCrop = async () => {
+    try {
+      const croppedDataUrl = await getCroppedImg(cropSrc, croppedAreaPixels);
+      setNewPost(prev => ({ ...prev, imageUrl: croppedDataUrl }));
+      setCropModalOpen(false);
+      setCropSrc(null);
+    } catch (e) {
+      console.error('crop error', e);
+      alert('Failed to crop image');
     }
   };
 
@@ -234,6 +260,26 @@ const AdminContent = () => {
                 <p className="file-info">Uploaded: {uploadedFile.name}</p>
               )}
             </div>
+
+            {cropModalOpen && (
+              <div className="crop-modal">
+                <div className="crop-container">
+                  <Cropper
+                    image={cropSrc}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={16/9}
+                    onCropChange={setCrop}
+                    onZoomChange={setZoom}
+                    onCropComplete={onCropComplete}
+                  />
+                </div>
+                <div className="crop-actions">
+                  <button type="button" className="btn" onClick={() => { setCropModalOpen(false); setCropSrc(null); }}>Cancel</button>
+                  <button type="button" className="btn btn-primary" onClick={applyCrop}>Apply Crop</button>
+                </div>
+              </div>
+            )}
 
             <div className="form-group">
               <label>Title *</label>
