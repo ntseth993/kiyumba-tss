@@ -32,6 +32,9 @@
     },
     "api/init-db-route.js": {
       "runtime": "nodejs18.x"
+    },
+    "api/setup.js": {
+      "runtime": "nodejs18.x"
     }
   },
   "rewrites": [
