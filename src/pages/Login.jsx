@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { GraduationCap, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import LoginDebug from '../components/LoginDebug';
 import './Login.css';
 
 const Login = () => {
@@ -57,6 +58,7 @@ const Login = () => {
 
   return (
     <div className="login-page">
+      <LoginDebug />
       <Link to="/" className="back-button">
         <ArrowLeft size={20} />
         Back to Home

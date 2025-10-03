@@ -25,9 +25,11 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
+    console.log('Login attempt:', { email, password });
     try {
       // Check demo accounts first
       if (email === 'admin@kiyumba.com' && password === 'admin123') {
+        console.log('Admin login successful');
         const userData = {
           id: 1,
           name: 'Admin User',
@@ -42,6 +44,7 @@ export const AuthProvider = ({ children }) => {
 
       // Demo staff account
       if (email === 'staff@kiyumba.com' && password === 'staff123') {
+        console.log('Staff login successful');
         const userData = {
           id: 2,
           name: 'Staff Member',
@@ -56,6 +59,7 @@ export const AuthProvider = ({ children }) => {
 
       // Demo teacher account
       if (email === 'teacher@kiyumba.com' && password === 'teacher123') {
+        console.log('Teacher login successful');
         const userData = {
           id: 3,
           name: 'Teacher User',
@@ -68,11 +72,30 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: userData };
       }
 
+      // Demo student account
+      if (email === 'student@kiyumba.com' && password === 'student123') {
+        console.log('Student login successful');
+        const userData = {
+          id: 4,
+          name: 'Student User',
+          email: 'student@kiyumba.com',
+          role: 'student',
+          avatar: 'https://ui-avatars.com/api/?name=Student+User&background=EF4444&color=fff'
+        };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return { success: true, user: userData };
+      }
+
       // Try to login with database/localStorage
-      const userData = await loginUser(email, password);
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return { success: true, user: userData };
+      try {
+        const userData = await loginUser(email, password);
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return { success: true, user: userData };
+      } catch (error) {
+        return { success: false, error: 'Invalid email or password' };
+      }
     } catch (error) {
       return { success: false, error: error.message || 'Invalid credentials' };
     }
