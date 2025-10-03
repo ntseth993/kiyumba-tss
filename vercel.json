@@ -35,6 +35,9 @@
     },
     "api/setup.js": {
       "runtime": "nodejs18.x"
+    },
+    "api/database-init.js": {
+      "runtime": "nodejs18.x"
     }
   },
   "rewrites": [
