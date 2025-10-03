@@ -1,5 +1,23 @@
 {
+  "functions": {
+    "api/posts.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/posts/toggle-visibility.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/posts/like.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/init-db.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/init-db-route.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
