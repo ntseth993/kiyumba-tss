@@ -155,3 +155,63 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Demo credentials */
+.demo-credentials {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.demo-credentials h3 {
+  color: white;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.demo-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.demo-btn {
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.demo-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.demo-btn.admin:hover {
+  background: rgba(79, 70, 229, 0.3);
+  border-color: #4F46E5;
+}
+
+.demo-btn.staff:hover {
+  background: rgba(16, 185, 129, 0.3);
+  border-color: #10B981;
+}
+
+.demo-btn.teacher:hover {
+  background: rgba(245, 158, 11, 0.3);
+  border-color: #F59E0B;
+}
+
+.demo-btn.student:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: #EF4444;
+}

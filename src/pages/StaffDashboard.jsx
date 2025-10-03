@@ -3,16 +3,18 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Users, BookOpen, Award, Calendar, Settings, FileText, MessageSquare, GraduationCap } from 'lucide-react';
+import { Users, BookOpen, Award, Calendar, Settings, FileText, MessageSquare, Bell } from 'lucide-react';
 import { getPosts } from '../services/postsService';
-import { getUserMessages } from '../services/messagesService';
-import './TeacherDashboard.css';
+import { getAllMessages } from '../services/messagesService';
+import { getContactSubmissions } from '../services/contactService';
+import './StaffDashboard.css';
 
-const TeacherDashboard = () => {
+const StaffDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [postStats, setPostStats] = useState({ total: 0, visible: 0, hidden: 0 });
   const [messages, setMessages] = useState([]);
+  const [contactSubmissions, setContactSubmissions] = useState([]);
 
   useEffect(() => {
     loadDashboardData();
@@ -26,37 +28,30 @@ const TeacherDashboard = () => {
       const hidden = posts.filter(p => p.visible === false).length;
       setPostStats({ total: posts.length, visible, hidden });
 
-      // Load messages for this teacher
-      const messagesData = await getUserMessages(user.id);
+      // Load messages
+      const messagesData = await getAllMessages();
       setMessages(messagesData);
+
+      // Load contact submissions
+      const contactData = await getContactSubmissions();
+      setContactSubmissions(contactData);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     }
   };
 
   const stats = [
-    { id: 1, label: 'My Posts', value: postStats.total.toString(), icon: FileText, color: '#4F46E5', change: `${postStats.visible} visible` },
+    { id: 1, label: 'Total Posts', value: postStats.total.toString(), icon: FileText, color: '#4F46E5', change: `${postStats.visible} visible` },
     { id: 2, label: 'Messages', value: messages.length.toString(), icon: MessageSquare, color: '#10B981', change: 'New messages' },
-    { id: 3, label: 'My Students', value: '45', icon: Users, color: '#F59E0B', change: 'Active' },
-    { id: 4, label: 'Courses', value: '3', icon: BookOpen, color: '#EF4444', change: 'Teaching' },
+    { id: 3, label: 'Contact Forms', value: contactSubmissions.length.toString(), icon: Bell, color: '#F59E0B', change: 'Submissions' },
+    { id: 4, label: 'Active Students', value: '1,524', icon: Users, color: '#EF4444', change: '+12%' },
   ];
 
   const recentMessages = messages.slice(0, 5);
-
-  const myCourses = [
-    { id: 1, name: 'Mathematics 101', students: 25, grade: 'A', status: 'Active' },
-    { id: 2, name: 'Advanced Calculus', students: 15, grade: 'A+', status: 'Active' },
-    { id: 3, name: 'Statistics', students: 20, grade: 'A-', status: 'Active' },
-  ];
-
-  const upcomingClasses = [
-    { id: 1, subject: 'Mathematics 101', time: '9:00 AM', room: 'Room 201' },
-    { id: 2, subject: 'Advanced Calculus', time: '11:00 AM', room: 'Room 203' },
-    { id: 3, subject: 'Statistics', time: '2:00 PM', room: 'Room 205' },
-  ];
+  const recentContacts = contactSubmissions.slice(0, 5);
 
   return (
-    <div className="teacher-dashboard">
+    <div className="staff-dashboard">
       <Navbar />
       
       <div className="dashboard-container">
@@ -66,10 +61,10 @@ const TeacherDashboard = () => {
             <img src={user.avatar} alt={user.name} className="user-avatar" />
             <div>
               <h1>Welcome, {user.name}</h1>
-              <p>Teacher Dashboard</p>
+              <p>Staff Dashboard</p>
             </div>
           </div>
-          <button className="btn btn-primary" onClick={() => navigate('/teacher/settings')}>
+          <button className="btn btn-primary" onClick={() => navigate('/staff/settings')}>
             <Settings size={18} />
             Settings
           </button>
@@ -96,64 +91,13 @@ const TeacherDashboard = () => {
         </div>
 
         {/* Main Content Grid */}
-        <div className="teacher-grid">
-          {/* My Courses */}
-          <div className="teacher-section">
-            <div className="section-header">
-              <h2>
-                <BookOpen size={24} />
-                My Courses
-              </h2>
-              <button className="btn btn-outline btn-sm">Manage</button>
-            </div>
-            <div className="courses-list">
-              {myCourses.map((course) => (
-                <div key={course.id} className="course-item card">
-                  <div className="course-header">
-                    <h4>{course.name}</h4>
-                    <span className={`status-badge ${course.status.toLowerCase()}`}>
-                      {course.status}
-                    </span>
-                  </div>
-                  <div className="course-stats">
-                    <span>{course.students} students</span>
-                    <span className="grade">Grade: {course.grade}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Upcoming Classes */}
-          <div className="teacher-section">
-            <div className="section-header">
-              <h2>
-                <Calendar size={24} />
-                Today's Classes
-              </h2>
-              <button className="btn btn-outline btn-sm">View Schedule</button>
-            </div>
-            <div className="classes-list">
-              {upcomingClasses.map((classItem) => (
-                <div key={classItem.id} className="class-item card">
-                  <div className="class-time">
-                    <span className="time">{classItem.time}</span>
-                  </div>
-                  <div className="class-details">
-                    <h4>{classItem.subject}</h4>
-                    <p>{classItem.room}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
+        <div className="staff-grid">
           {/* Recent Messages */}
-          <div className="teacher-section">
+          <div className="staff-section">
             <div className="section-header">
               <h2>
                 <MessageSquare size={24} />
-                Messages
+                Recent Messages
               </h2>
               <button className="btn btn-outline btn-sm">View All</button>
             </div>
@@ -176,27 +120,56 @@ const TeacherDashboard = () => {
             </div>
           </div>
 
+          {/* Contact Form Submissions */}
+          <div className="staff-section">
+            <div className="section-header">
+              <h2>
+                <Bell size={24} />
+                Contact Submissions
+              </h2>
+              <button className="btn btn-outline btn-sm">View All</button>
+            </div>
+            <div className="contact-list">
+              {recentContacts.length === 0 ? (
+                <p className="empty-state">No contact submissions yet</p>
+              ) : (
+                recentContacts.map((contact) => (
+                  <div key={contact.id} className="contact-item card">
+                    <div className="contact-header">
+                      <span className="contact-name">{contact.name}</span>
+                      <span className="contact-time">
+                        {new Date(contact.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="contact-subject">{contact.subject}</p>
+                    <p className="contact-message">{contact.message}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
           {/* Quick Actions */}
-          <div className="teacher-section">
+          <div className="staff-section">
             <div className="section-header">
               <h2>Quick Actions</h2>
             </div>
             <div className="quick-actions-grid">
               <button className="action-btn card" onClick={() => navigate('/admin/content')}>
                 <FileText size={24} />
-                <span>Create Post</span>
+                <span>View Posts</span>
               </button>
-              <button className="action-btn card">
+              <button className="action-btn card" onClick={() => navigate('/admin/applications')}>
                 <Users size={24} />
-                <span>My Students</span>
+                <span>Applications</span>
               </button>
               <button className="action-btn card">
                 <MessageSquare size={24} />
                 <span>Send Message</span>
               </button>
               <button className="action-btn card">
-                <Award size={24} />
-                <span>Grade Assignments</span>
+                <Calendar size={24} />
+                <span>Schedule Event</span>
               </button>
             </div>
           </div>
@@ -208,4 +181,4 @@ const TeacherDashboard = () => {
   );
 };
 
-export default TeacherDashboard;
+export default StaffDashboard;

@@ -9,12 +9,14 @@ import AdminApplications from './pages/AdminApplications';
 import AdminUserManagement from './pages/AdminUserManagement';
 import AdminContent from './pages/AdminContent';
 import AdminSettings from './pages/AdminSettings';
+import StaffDashboard from './pages/StaffDashboard';
+import TeacherDashboard from './pages/TeacherDashboard';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import './App.css';
 
 // Protected Route Component
-const ProtectedRoute = ({ children, requiredRole }) => {
+const ProtectedRoute = ({ children, requiredRole, allowedRoles }) => {
   const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
@@ -29,7 +31,12 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/login" replace />;
   }
 
+  // Check if user has required role or is in allowed roles
   if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/" replace />;
   }
 
@@ -80,7 +87,7 @@ function AppRoutes() {
         <Route
           path="/admin/content"
           element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute allowedRoles={['admin', 'staff', 'teacher']}>
               <AdminContent />
             </ProtectedRoute>
           }
@@ -90,6 +97,22 @@ function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="admin">
               <AdminSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/dashboard"
+          element={
+            <ProtectedRoute requiredRole="staff">
+              <StaffDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/dashboard"
+          element={
+            <ProtectedRoute requiredRole="teacher">
+              <TeacherDashboard />
             </ProtectedRoute>
           }
         />

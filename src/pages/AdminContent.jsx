@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Image, Video, MessageSquare, Upload, Trash2, Eye, FileUp } from 'lucide-react';
 import ImageEditorModal from '../components/ImageEditorModal';
+import { getPosts, createPost, updatePost, deletePost, togglePostVisibility } from '../services/postsService';
 import './AdminContent.css';
 
 const AdminContent = () => {
@@ -25,9 +26,17 @@ const AdminContent = () => {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('posts') || '[]');
-    setPosts(stored);
+    loadPosts();
   }, []);
+
+  const loadPosts = async () => {
+    try {
+      const postsData = await getPosts();
+      setPosts(postsData);
+    } catch (error) {
+      console.error('Error loading posts:', error);
+    }
+  };
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -101,41 +110,45 @@ const AdminContent = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) {
       return;
     }
     
-    const post = {
-      id: Date.now(),
-      ...newPost,
-      textSize: newPost.textSize || 'medium',
-      visible: true,
-      author: 'Admin',
-      date: new Date().toISOString(),
-      likes: 0,
-      comments: [],
-      fileName: uploadedFile ? uploadedFile.name : null
-    };
+    try {
+      const postData = {
+        ...newPost,
+        textSize: newPost.textSize || 'medium',
+        visible: true,
+        author: 'Admin'
+      };
 
-    const updatedPosts = [post, ...posts];
-    setPosts(updatedPosts);
-    localStorage.setItem('posts', JSON.stringify(updatedPosts));
-    
-    setNewPost({ type: 'text', title: '', content: '', imageUrl: '', videoUrl: '', textSize: 'medium' });
-    setUploadedFile(null);
-    setErrors({});
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    alert('Post created successfully!');
+      const newPostData = await createPost(postData);
+      setPosts(prev => [newPostData, ...prev]);
+      
+      setNewPost({ type: 'text', title: '', content: '', imageUrl: '', videoUrl: '', textSize: 'medium' });
+      setUploadedFile(null);
+      setErrors({});
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      alert('Post created successfully!');
+    } catch (error) {
+      console.error('Error creating post:', error);
+      alert('Failed to create post. Please try again.');
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Delete this post?')) {
-      const updated = posts.filter(p => p.id !== id);
-      setPosts(updated);
-      localStorage.setItem('posts', JSON.stringify(updated));
+      try {
+        await deletePost(id);
+        setPosts(prev => prev.filter(p => p.id !== id));
+        alert('Post deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Failed to delete post. Please try again.');
+      }
     }
   };
 
@@ -187,25 +200,33 @@ const AdminContent = () => {
     return true;
   };
 
-  const saveEdit = (e) => {
+  const saveEdit = async (e) => {
     e.preventDefault();
     
     if (!validateEditForm()) {
       return;
     }
     
-    const updated = posts.map(p => (p.id === editingPostId ? { ...p, ...editPost } : p));
-    setPosts(updated);
-    localStorage.setItem('posts', JSON.stringify(updated));
-    setEditingPostId(null);
-    setEditPost(null);
-    alert('Post updated successfully!');
+    try {
+      const updatedPostData = await updatePost(editingPostId, editPost);
+      setPosts(prev => prev.map(p => p.id === editingPostId ? updatedPostData : p));
+      setEditingPostId(null);
+      setEditPost(null);
+      alert('Post updated successfully!');
+    } catch (error) {
+      console.error('Error updating post:', error);
+      alert('Failed to update post. Please try again.');
+    }
   };
 
-  const toggleVisibility = (id) => {
-    const updated = posts.map(p => (p.id === id ? { ...p, visible: !p.visible } : p));
-    setPosts(updated);
-    localStorage.setItem('posts', JSON.stringify(updated));
+  const toggleVisibility = async (id) => {
+    try {
+      const updatedPostData = await togglePostVisibility(id);
+      setPosts(prev => prev.map(p => p.id === id ? updatedPostData : p));
+    } catch (error) {
+      console.error('Error toggling visibility:', error);
+      alert('Failed to toggle post visibility. Please try again.');
+    }
   };
 
   return (

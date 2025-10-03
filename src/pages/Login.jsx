@@ -24,6 +24,10 @@ const Login = () => {
       // Navigate based on user role
       if (result.user.role === 'admin') {
         navigate('/admin/dashboard');
+      } else if (result.user.role === 'staff') {
+        navigate('/staff/dashboard');
+      } else if (result.user.role === 'teacher') {
+        navigate('/teacher/dashboard');
       } else if (result.user.role === 'student') {
         navigate('/student/dashboard');
       }
@@ -38,6 +42,12 @@ const Login = () => {
     if (role === 'admin') {
       setEmail('admin@kiyumba.com');
       setPassword('admin123');
+    } else if (role === 'staff') {
+      setEmail('staff@kiyumba.com');
+      setPassword('staff123');
+    } else if (role === 'teacher') {
+      setEmail('teacher@kiyumba.com');
+      setPassword('teacher123');
     } else {
       setEmail('student@kiyumba.com');
       setPassword('student123');
@@ -109,7 +119,40 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Demo credentials hidden for production */}
+          {/* Demo credentials for testing */}
+          <div className="demo-credentials">
+            <h3>Demo Accounts</h3>
+            <div className="demo-buttons">
+              <button 
+                type="button" 
+                className="demo-btn admin" 
+                onClick={() => fillDemoCredentials('admin')}
+              >
+                Admin
+              </button>
+              <button 
+                type="button" 
+                className="demo-btn staff" 
+                onClick={() => fillDemoCredentials('staff')}
+              >
+                Staff
+              </button>
+              <button 
+                type="button" 
+                className="demo-btn teacher" 
+                onClick={() => fillDemoCredentials('teacher')}
+              >
+                Teacher
+              </button>
+              <button 
+                type="button" 
+                className="demo-btn student" 
+                onClick={() => fillDemoCredentials('student')}
+              >
+                Student
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

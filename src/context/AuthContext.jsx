@@ -40,6 +40,34 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: userData };
       }
 
+      // Demo staff account
+      if (email === 'staff@kiyumba.com' && password === 'staff123') {
+        const userData = {
+          id: 2,
+          name: 'Staff Member',
+          email: 'staff@kiyumba.com',
+          role: 'staff',
+          avatar: 'https://ui-avatars.com/api/?name=Staff+Member&background=10B981&color=fff'
+        };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return { success: true, user: userData };
+      }
+
+      // Demo teacher account
+      if (email === 'teacher@kiyumba.com' && password === 'teacher123') {
+        const userData = {
+          id: 3,
+          name: 'Teacher User',
+          email: 'teacher@kiyumba.com',
+          role: 'teacher',
+          avatar: 'https://ui-avatars.com/api/?name=Teacher+User&background=F59E0B&color=fff'
+        };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return { success: true, user: userData };
+      }
+
       // Try to login with database/localStorage
       const userData = await loginUser(email, password);
       setUser(userData);
@@ -62,6 +90,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
+    isStaff: user?.role === 'staff',
+    isTeacher: user?.role === 'teacher',
     isStudent: user?.role === 'student'
   };
 
