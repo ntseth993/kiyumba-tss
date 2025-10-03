@@ -1,208 +1,82 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Users, BookOpen, Award, Calendar, Settings, FileText, MessageSquare, GraduationCap } from 'lucide-react';
-import { getPosts } from '../services/postsService';
-import { getUserMessages } from '../services/messagesService';
 import './TeacherDashboard.css';
 
 const TeacherDashboard = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [postStats, setPostStats] = useState({ total: 0, visible: 0, hidden: 0 });
-  const [messages, setMessages] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [assessments, setAssessments] = useState([]);
+  const [newAssessment, setNewAssessment] = useState({
+    title: '',
+    type: 'quiz',
+    instructions: '',
+    questions: [],
+    visible: false
+  });
 
   useEffect(() => {
-    loadDashboardData();
+    fetch('/api/courses').then(r=>r.json()).then(setCourses);
   }, []);
 
-  const loadDashboardData = async () => {
-    try {
-      // Load post stats
-      const posts = await getPosts();
-      const visible = posts.filter(p => p.visible !== false).length;
-      const hidden = posts.filter(p => p.visible === false).length;
-      setPostStats({ total: posts.length, visible, hidden });
+  useEffect(() => {
+    if (selectedCourse) {
+      fetch(`/api/assessments?course_id=${selectedCourse.id}`).then(r=>r.json()).then(setAssessments);
+    }
+  }, [selectedCourse]);
 
-      // Load messages for this teacher
-      const messagesData = await getUserMessages(user.id);
-      setMessages(messagesData);
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
+  const handleCreateAssessment = async (e) => {
+    e.preventDefault();
+    if (!selectedCourse) return alert('Select a course');
+    if (!newAssessment.title.trim()) return alert('Title required');
+    const res = await fetch('/api/assessments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...newAssessment, course_id: selectedCourse.id })
+    });
+    if (res.ok) {
+      alert('Assessment created');
+      setNewAssessment({ title: '', type: 'quiz', instructions: '', questions: [], visible: false });
+      fetch(`/api/assessments?course_id=${selectedCourse.id}`).then(r=>r.json()).then(setAssessments);
+    } else {
+      alert('Error creating assessment');
     }
   };
-
-  const stats = [
-    { id: 1, label: 'My Posts', value: postStats.total.toString(), icon: FileText, color: '#4F46E5', change: `${postStats.visible} visible` },
-    { id: 2, label: 'Messages', value: messages.length.toString(), icon: MessageSquare, color: '#10B981', change: 'New messages' },
-    { id: 3, label: 'My Students', value: '45', icon: Users, color: '#F59E0B', change: 'Active' },
-    { id: 4, label: 'Courses', value: '3', icon: BookOpen, color: '#EF4444', change: 'Teaching' },
-  ];
-
-  const recentMessages = messages.slice(0, 5);
-
-  const myCourses = [
-    { id: 1, name: 'Mathematics 101', students: 25, grade: 'A', status: 'Active' },
-    { id: 2, name: 'Advanced Calculus', students: 15, grade: 'A+', status: 'Active' },
-    { id: 3, name: 'Statistics', students: 20, grade: 'A-', status: 'Active' },
-  ];
-
-  const upcomingClasses = [
-    { id: 1, subject: 'Mathematics 101', time: '9:00 AM', room: 'Room 201' },
-    { id: 2, subject: 'Advanced Calculus', time: '11:00 AM', room: 'Room 203' },
-    { id: 3, subject: 'Statistics', time: '2:00 PM', room: 'Room 205' },
-  ];
 
   return (
     <div className="teacher-dashboard">
       <Navbar />
-      
       <div className="dashboard-container">
-        {/* Header */}
-        <div className="dashboard-header">
-          <div className="welcome-section">
-            <img src={user.avatar} alt={user.name} className="user-avatar" />
-            <div>
-              <h1>Welcome, {user.name}</h1>
-              <p>Teacher Dashboard</p>
-            </div>
-          </div>
-          <button className="btn btn-primary" onClick={() => navigate('/teacher/settings')}>
-            <Settings size={18} />
-            Settings
-          </button>
+        <h1>Teacher Dashboard</h1>
+        <div>
+          <label>Select Course:</label>
+          <select value={selectedCourse?.id || ''} onChange={e => setSelectedCourse(courses.find(c => c.id == e.target.value))}>
+            <option value="">-- Select --</option>
+            {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
         </div>
-
-        {/* Stats Grid */}
-        <div className="stats-grid">
-          {stats.map((stat) => (
-            <div key={stat.id} className="stat-card card">
-              <div className="stat-icon" style={{ backgroundColor: `${stat.color}15` }}>
-                <stat.icon size={28} color={stat.color} />
-              </div>
-              <div className="stat-content">
-                <p className="stat-label">{stat.label}</p>
-                <div className="stat-value-row">
-                  <h3>{stat.value}</h3>
-                  <span className="stat-change positive">
-                    {stat.change}
-                  </span>
-                </div>
-              </div>
+        <form onSubmit={handleCreateAssessment} className="card">
+          <h2>Create Assessment</h2>
+          <input type="text" placeholder="Title" value={newAssessment.title} onChange={e => setNewAssessment(a => ({ ...a, title: e.target.value }))} required />
+          <select value={newAssessment.type} onChange={e => setNewAssessment(a => ({ ...a, type: e.target.value }))}>
+            <option value="quiz">Quiz</option>
+            <option value="exam">Exam</option>
+            <option value="test">Test</option>
+          </select>
+          <textarea placeholder="Instructions" value={newAssessment.instructions} onChange={e => setNewAssessment(a => ({ ...a, instructions: e.target.value }))} />
+          <label><input type="checkbox" checked={newAssessment.visible} onChange={e => setNewAssessment(a => ({ ...a, visible: e.target.checked }))} /> Visible to students</label>
+          <button type="submit">Create</button>
+        </form>
+        <div className="assessments-list card">
+          <h2>Assessments for {selectedCourse?.name}</h2>
+          {assessments.map(a => (
+            <div key={a.id} className="assessment-item">
+              <strong>{a.title}</strong> ({a.type}) - {a.visible ? 'Visible' : 'Hidden'}
+              <div>{a.instructions}</div>
             </div>
           ))}
         </div>
-
-        {/* Main Content Grid */}
-        <div className="teacher-grid">
-          {/* My Courses */}
-          <div className="teacher-section">
-            <div className="section-header">
-              <h2>
-                <BookOpen size={24} />
-                My Courses
-              </h2>
-              <button className="btn btn-outline btn-sm">Manage</button>
-            </div>
-            <div className="courses-list">
-              {myCourses.map((course) => (
-                <div key={course.id} className="course-item card">
-                  <div className="course-header">
-                    <h4>{course.name}</h4>
-                    <span className={`status-badge ${course.status.toLowerCase()}`}>
-                      {course.status}
-                    </span>
-                  </div>
-                  <div className="course-stats">
-                    <span>{course.students} students</span>
-                    <span className="grade">Grade: {course.grade}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Upcoming Classes */}
-          <div className="teacher-section">
-            <div className="section-header">
-              <h2>
-                <Calendar size={24} />
-                Today's Classes
-              </h2>
-              <button className="btn btn-outline btn-sm">View Schedule</button>
-            </div>
-            <div className="classes-list">
-              {upcomingClasses.map((classItem) => (
-                <div key={classItem.id} className="class-item card">
-                  <div className="class-time">
-                    <span className="time">{classItem.time}</span>
-                  </div>
-                  <div className="class-details">
-                    <h4>{classItem.subject}</h4>
-                    <p>{classItem.room}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Recent Messages */}
-          <div className="teacher-section">
-            <div className="section-header">
-              <h2>
-                <MessageSquare size={24} />
-                Messages
-              </h2>
-              <button className="btn btn-outline btn-sm">View All</button>
-            </div>
-            <div className="messages-list">
-              {recentMessages.length === 0 ? (
-                <p className="empty-state">No messages yet</p>
-              ) : (
-                recentMessages.map((message) => (
-                  <div key={message.id} className="message-item card">
-                    <div className="message-header">
-                      <span className="sender-name">{message.senderName || 'Anonymous'}</span>
-                      <span className="message-time">
-                        {new Date(message.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="message-content">{message.content}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="teacher-section">
-            <div className="section-header">
-              <h2>Quick Actions</h2>
-            </div>
-            <div className="quick-actions-grid">
-              <button className="action-btn card" onClick={() => navigate('/admin/content')}>
-                <FileText size={24} />
-                <span>Create Post</span>
-              </button>
-              <button className="action-btn card">
-                <Users size={24} />
-                <span>My Students</span>
-              </button>
-              <button className="action-btn card">
-                <MessageSquare size={24} />
-                <span>Send Message</span>
-              </button>
-              <button className="action-btn card">
-                <Award size={24} />
-                <span>Grade Assignments</span>
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
-
       <Footer />
     </div>
   );
