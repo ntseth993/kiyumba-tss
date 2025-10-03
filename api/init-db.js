@@ -66,6 +66,46 @@ export default async function handler(req, res) {
       )
     `;
 
+    // Create comments table
+    await sql`
+      CREATE TABLE IF NOT EXISTS comments (
+        id SERIAL PRIMARY KEY,
+        post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+        content TEXT NOT NULL,
+        author VARCHAR(100) NOT NULL,
+        author_email VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create messages table
+    await sql`
+      CREATE TABLE IF NOT EXISTS messages (
+        id SERIAL PRIMARY KEY,
+        content TEXT NOT NULL,
+        sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        receiver_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        sender_name VARCHAR(100),
+        sender_email VARCHAR(255),
+        is_read BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create contact_submissions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS contact_submissions (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        subject VARCHAR(200) NOT NULL,
+        message TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
     res.status(200).json({ 
       success: true, 
       message: 'Database initialized successfully' 

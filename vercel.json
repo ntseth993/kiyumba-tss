@@ -9,6 +9,24 @@
     "api/posts/like.js": {
       "runtime": "nodejs18.x"
     },
+    "api/posts/[postId]/comments.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/comments/[commentId].js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/messages.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/contact.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/contact-submissions.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/users/profile.js": {
+      "runtime": "nodejs18.x"
+    },
     "api/init-db.js": {
       "runtime": "nodejs18.x"
     },
