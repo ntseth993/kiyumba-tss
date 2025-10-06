@@ -31,6 +31,10 @@ const Home = () => {
               Apply Now
               <ArrowRight size={20} />
             </Link>
+            <Link to="/visit/register" className="btn btn-secondary btn-large">
+              Parent Visit
+              <ArrowRight size={20} />
+            </Link>
             <Link to="/about" className="btn btn-outline btn-large">
               Learn More
             </Link>
@@ -99,29 +103,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="stats-section">
-        <div className="container">
-          <div className="stats-grid">
-            <div className="stat-item">
-              <h3 className="stat-number">1500+</h3>
-              <p className="stat-label">Active Students</p>
-            </div>
-            <div className="stat-item">
-              <h3 className="stat-number">120+</h3>
-              <p className="stat-label">Qualified Teachers</p>
-            </div>
-            <div className="stat-item">
-              <h3 className="stat-number">95%</h3>
-              <p className="stat-label">Success Rate</p>
-            </div>
-            <div className="stat-item">
-              <h3 className="stat-number">50+</h3>
-              <p className="stat-label">Awards Won</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Programs Section */}
       <section className="programs">
