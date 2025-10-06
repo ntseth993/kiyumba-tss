@@ -1,0 +1,40 @@
+﻿
+
+    Directory: C:\Users\SETH'S\Desktop\kiyumba react\dist
+
+
+Mode                 LastWriteTime         Length Name                                                                            
+----                 -------------         ------ ----                                                                            
+d-----         10/6/2025  11:29 AM                assets                                                                          
+d-----         10/6/2025  11:29 AM                photo                                                                           
+-a----         10/2/2025   6:34 PM             28 config.json                                                                     
+-a----         10/3/2025   7:00 AM           3457 database-init.html                                                              
+-a----         10/2/2025   7:20 PM            323 favicon.svg                                                                     
+-a----         10/6/2025  11:29 AM            458 index.html                                                                      
+-a----         10/3/2025   6:40 AM           3665 init-db.html                                                                    
+-a----         9/30/2025   5:47 PM           1497 vite.svg                                                                        
+
+
+    Directory: C:\Users\SETH'S\Desktop\kiyumba react\dist\assets
+
+
+Mode                 LastWriteTime         Length Name                                                                            
+----                 -------------         ------ ----                                                                            
+-a----         10/6/2025  11:29 AM          55060 index-D0XT2fTD.css                                                              
+-a----         10/6/2025  11:29 AM         476536 index-DW-53aUC.js                                                               
+-a----         10/6/2025  11:29 AM        1870767 index-DW-53aUC.js.map                                                           
+
+
+    Directory: C:\Users\SETH'S\Desktop\kiyumba react\dist\photo
+
+
+Mode                 LastWriteTime         Length Name                                                                            
+----                 -------------         ------ ----                                                                            
+-a----         9/14/2025   5:00 PM          97421 53052544765_9415da6830_z.jpg                                                    
+-a----         9/14/2025   4:58 PM         205445 53052545295_2075ea5de5_h.jpg                                                    
+-a----         9/14/2025   4:57 PM         438869 53052545760_486cf79aca_h.jpg                                                    
+-a----         9/14/2025   4:58 PM         343546 53052642563_40f42c7517_h.jpg                                                    
+-a----         9/14/2025   4:57 PM         462370 53052642628_2c65591db6_h.jpg                                                    
+-a----         9/19/2025   4:03 PM          24909 icon.jpg                                                                        
+
+

@@ -1,5 +1,17 @@
 {
   "functions": {
+    "api/auth/login.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/auth/register.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/users/index.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/users/profile.js": {
+      "runtime": "nodejs18.x"
+    },
     "api/posts.js": {
       "runtime": "nodejs18.x"
     },
@@ -22,9 +34,6 @@
       "runtime": "nodejs18.x"
     },
     "api/contact-submissions.js": {
-      "runtime": "nodejs18.x"
-    },
-    "api/users/profile.js": {
       "runtime": "nodejs18.x"
     },
     "api/init-db.js": {

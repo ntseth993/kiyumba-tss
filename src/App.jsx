@@ -13,6 +13,8 @@ import StaffDashboard from './pages/StaffDashboard';
 import TeacherDashboard from './pages/TeacherDashboard';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import VisitRegister from './pages/VisitRegister';
+import AdminVisitings from './pages/AdminVisitings';
 import './App.css';
 
 // Protected Route Component
@@ -52,6 +54,7 @@ function AppRoutes() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+  <Route path="/visit/register" element={<VisitRegister />} />
         <Route
           path="/student/dashboard"
           element={
@@ -97,6 +100,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="admin">
               <AdminSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/visitings"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminVisitings />
             </ProtectedRoute>
           }
         />
