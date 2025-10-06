@@ -30,7 +30,40 @@ const AdminContent = () => {
   }, []);
 
   const handleFileUpload = (e) => {
-    const file = e.target.files[0];
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    // If multiple files selected, create a post per image quickly (no editor)
+    if (files.length > 1) {
+      const imageFiles = files.filter(f => f.type.startsWith('image/'));
+      if (imageFiles.length > 0) {
+        const newPosts = imageFiles.map((f) => ({
+          id: Date.now() + Math.random(),
+          type: 'image',
+          title: f.name.replace(/\.[^/.]+$/, ''),
+          content: '',
+          imageUrl: URL.createObjectURL(f),
+          textSize: 'medium',
+          visible: true,
+          author: 'Admin',
+          date: new Date().toISOString(),
+          likes: 0,
+          comments: [],
+          fileName: f.name
+        }));
+
+        const updated = [...newPosts, ...posts];
+        setPosts(updated);
+        localStorage.setItem('posts', JSON.stringify(updated));
+        // Clear file input
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        alert(`${newPosts.length} posts created from uploaded images`);
+        return;
+      }
+    }
+
+    // Single file flow (existing behavior)
+    const file = files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -51,6 +84,14 @@ const AdminContent = () => {
         reader.readAsText(file);
       }
     }
+  };
+
+  // Handler to replace image for an existing post (opens editor)
+  const handleEditFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditingImage(file);
+    setImageEditorOpen(true);
   };
 
   const handleImageSave = (processedImage) => {
@@ -402,6 +443,9 @@ const AdminContent = () => {
                         {editPost.imageUrl && (
                           <div style={{ marginTop: '8px' }}>
                             <button type="button" className="btn" onClick={() => editImage(editPost.imageUrl)}>Edit Image</button>
+                            <div style={{ marginTop: 8 }}>
+                              <label className="btn small">Replace image<input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleEditFile} /></label>
+                            </div>
                           </div>
                         )}
                       </div>
