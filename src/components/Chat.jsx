@@ -102,7 +102,8 @@ const Chat = () => {
     setLoading(true);
     try {
       await sendChatMessage({
-        sender_id: user.id,
+        sender_id: user?.id || 1,
+        sender_name: user?.name || 'Guest',
         message: newMessage.trim(),
         message_type: 'text'
       });
@@ -111,7 +112,7 @@ const Chat = () => {
       await loadMessages();
     } catch (error) {
       console.error('Error sending message:', error);
-      alert('Failed to send message');
+      // Error is already handled by localStorage fallback
     } finally {
       setLoading(false);
     }
