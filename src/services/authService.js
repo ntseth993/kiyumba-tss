@@ -8,44 +8,20 @@ const API_BASE_URL = isProduction ? '' : 'http://localhost:5173';
 
 // Register a new user
 export const registerUser = async (userData) => {
-  const emailClean = (userData.email || '').toString().trim().toLowerCase();
-  const passwordClean = (userData.password || '').toString().trim();
-
-  // Try server API first (will work on Vercel if DATABASE_URL is configured)
-  if (typeof window !== 'undefined') {
-    try {
-      const resp = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...userData, email: emailClean, password: passwordClean })
-      });
-
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data && data.success && data.user) {
-          return data.user;
-        }
-      } else {
-        console.debug('Server register responded with', resp.status);
-      }
-    } catch (err) {
-      console.debug('Server register failed (falling back to localStorage):', err.message);
-    }
-  }
-
-  // Fallback: localStorage registration
-  try {
+  if (useLocalStorage) {
+    // Store in localStorage
     const users = JSON.parse(localStorage.getItem('users') || '[]');
-
-    if (users.find(u => (u.email || '').toString().trim().toLowerCase() === emailClean)) {
+    
+    // Check if email already exists
+    if (users.find(u => u.email === userData.email)) {
       throw new Error('Email already registered');
     }
 
     const newUser = {
       id: Date.now(),
       name: `${userData.firstName} ${userData.lastName}`,
-      email: emailClean,
-      password: passwordClean, // demo only
+      email: userData.email,
+      password: userData.password, // In production, hash this!
       role: 'student',
       phone: userData.phone,
       program: userData.program,
@@ -58,21 +34,70 @@ export const registerUser = async (userData) => {
     users.push(newUser);
     localStorage.setItem('users', JSON.stringify(users));
 
+    // Also store application
     const applications = JSON.parse(localStorage.getItem('applications') || '[]');
     applications.push({
       id: Date.now(),
-      full_name: newUser.name,
-      email: emailClean,
-      phone: userData.phone || null,
-      program: userData.program || null,
-      level: userData.level || null,
-      education_level: userData.previousSchool || null,
+      ...userData,
       status: 'approved',
       appliedDate: new Date().toISOString()
     });
     localStorage.setItem('applications', JSON.stringify(applications));
 
     return newUser;
+  }
+
+  try {
+    // Check if user exists
+    const existing = await sql`
+      SELECT id FROM users WHERE email = ${userData.email}
+    `;
+
+    if (existing.length > 0) {
+      throw new Error('Email already registered');
+    }
+
+    // Insert user
+    const result = await sql`
+      INSERT INTO users (
+        email,
+        password,
+        name,
+        role,
+        avatar
+      )
+      VALUES (
+        ${userData.email},
+        ${userData.password},
+        ${userData.firstName + ' ' + userData.lastName},
+        'student',
+        ${'https://ui-avatars.com/api/?name=' + userData.firstName + '+' + userData.lastName + '&background=4F46E5&color=fff'}
+      )
+      RETURNING id, email, name, role, avatar, created_at as "createdAt"
+    `;
+
+    // Insert application
+    await sql`
+      INSERT INTO applications (
+        full_name,
+        email,
+        phone,
+        program,
+        level,
+        education_level,
+        status
+      )
+      VALUES (
+        ${userData.firstName + ' ' + userData.lastName},
+        ${userData.email},
+        ${userData.phone || null},
+        ${userData.program},
+        ${userData.previousSchool || null},
+        'approved'
+      )
+    `;
+
+    return result[0];
   } catch (error) {
     console.error('Error registering user:', error);
     throw error;
@@ -81,72 +106,32 @@ export const registerUser = async (userData) => {
 
 // Login user
 export const loginUser = async (email, password) => {
-  const emailClean = (email || '').toString().trim().toLowerCase();
-  const passwordClean = (password || '').toString().trim();
-
-  // First, try serverless API (works on Vercel if DATABASE_URL is set)
-  if (typeof window !== 'undefined') {
-    try {
-      const resp = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailClean, password: passwordClean })
-      });
-
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data && data.success && data.user) {
-          return data.user;
-        }
-      } else {
-        // If server responds 4xx/5xx, fall through to localStorage fallback
-        console.debug('Server login responded with', resp.status);
-      }
-    } catch (err) {
-      console.debug('Server login failed (probably not available):', err.message);
-    }
-  }
-
-  // Fallback: localStorage-based lookup (works for deployments without DB)
-  try {
+  if (useLocalStorage) {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find(u => (u.email || '').toString().trim().toLowerCase() === emailClean && (u.password || '').toString().trim() === passwordClean);
-    console.debug('Local login lookup for', emailClean, 'found:', !!user);
-
+    const user = users.find(u => u.email === email && u.password === password);
+    
     if (!user) {
       throw new Error('Invalid email or password');
     }
-
+    
     return user;
-  } catch (error) {
-    console.error('Error logging in:', error);
-    throw error;
-  }
-};
-
-// Get all users (admin only)
-export const getAllUsers = async () => {
-  if (useLocalStorage) {
-    return JSON.parse(localStorage.getItem('users') || '[]');
   }
 
   try {
-    const users = await sql`
-      SELECT 
-        id,
-        email,
-        name,
-        role,
-        avatar,
-        created_at as "createdAt"
+    const result = await sql`
+      SELECT id, email, name, role, avatar, created_at as "createdAt"
       FROM users
-      ORDER BY created_at DESC
+      WHERE email = ${email} AND password = ${password}
     `;
 
-    return users;
+    if (result.length === 0) {
+      throw new Error('Invalid email or password');
+    }
+
+    return result[0];
   } catch (error) {
-    console.error('Error fetching users:', error);
-    return [];
+    console.error('Error logging in:', error);
+    throw error;
   }
 };
 

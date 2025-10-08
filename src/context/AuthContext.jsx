@@ -21,30 +21,14 @@ export const AuthProvider = ({ children }) => {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-
-    // Seed demo users into localStorage so the fallback login works on fresh deployments
-    const existing = JSON.parse(localStorage.getItem('users') || 'null');
-    if (!existing) {
-      const demoUsers = [
-        { id: 1, name: 'Admin User', email: 'admin@kiyumba.com', password: 'admin123', role: 'admin' },
-        { id: 2, name: 'Staff Member', email: 'staff@kiyumba.com', password: 'staff123', role: 'staff' },
-        { id: 3, name: 'Teacher User', email: 'teacher@kiyumba.com', password: 'teacher123', role: 'teacher' },
-        { id: 4, name: 'Student User', email: 'student@kiyumba.com', password: 'student123', role: 'student' }
-      ];
-      localStorage.setItem('users', JSON.stringify(demoUsers));
-      console.info('Demo users seeded into localStorage');
-    }
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
-    // Normalize inputs
-    const emailClean = (email || '').toString().trim().toLowerCase();
-    const passwordClean = (password || '').toString().trim();
-    console.log('Login attempt:', { email: emailClean });
+    console.log('Login attempt:', { email, password });
     try {
       // Check demo accounts first
-      if (emailClean === 'admin@kiyumba.com' && passwordClean === 'admin123') {
+      if (email === 'admin@kiyumba.com' && password === 'admin123') {
         console.log('Admin login successful');
         const userData = {
           id: 1,
@@ -59,7 +43,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Demo staff account
-      if (emailClean === 'staff@kiyumba.com' && passwordClean === 'staff123') {
+      if (email === 'staff@kiyumba.com' && password === 'staff123') {
         console.log('Staff login successful');
         const userData = {
           id: 2,
@@ -74,7 +58,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Demo teacher account
-      if (emailClean === 'teacher@kiyumba.com' && passwordClean === 'teacher123') {
+      if (email === 'teacher@kiyumba.com' && password === 'teacher123') {
         console.log('Teacher login successful');
         const userData = {
           id: 3,
@@ -89,7 +73,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Demo student account
-      if (emailClean === 'student@kiyumba.com' && passwordClean === 'student123') {
+      if (email === 'student@kiyumba.com' && password === 'student123') {
         console.log('Student login successful');
         const userData = {
           id: 4,
@@ -105,7 +89,7 @@ export const AuthProvider = ({ children }) => {
 
       // Try to login with database/localStorage
       try {
-        const userData = await loginUser(emailClean, passwordClean);
+        const userData = await loginUser(email, password);
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
         return { success: true, user: userData };

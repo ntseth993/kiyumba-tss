@@ -1,5 +1,26 @@
 {
   "functions": {
+    "api/events.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/subjects.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/classes.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/teacher-subjects.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/assessments.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/notifications.js": {
+      "runtime": "nodejs18.x"
+    },
+    "api/chat.js": {
+      "runtime": "nodejs18.x"
+    },
     "api/auth/login.js": {
       "runtime": "nodejs18.x"
     },

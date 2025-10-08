@@ -190,6 +190,90 @@ export default async function handler(req, res) {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`;
 
+      await sql`CREATE TABLE IF NOT EXISTS events (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(200) NOT NULL,
+        description TEXT,
+        date DATE NOT NULL,
+        time VARCHAR(20),
+        location VARCHAR(200),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`;
+
+      await sql`CREATE TABLE IF NOT EXISTS subjects (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        code VARCHAR(20),
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`;
+
+      await sql`CREATE TABLE IF NOT EXISTS classes (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        level VARCHAR(20),
+        program VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`;
+
+      await sql`CREATE TABLE IF NOT EXISTS teacher_subjects (
+        id SERIAL PRIMARY KEY,
+        teacher_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        subject_id INTEGER NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
+        class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(teacher_id, subject_id, class_id)
+      )`;
+
+      await sql`CREATE TABLE IF NOT EXISTS assessments (
+        id SERIAL PRIMARY KEY,
+        teacher_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(200) NOT NULL,
+        description TEXT,
+        type VARCHAR(20) NOT NULL,
+        subject VARCHAR(100),
+        class_name VARCHAR(100),
+        file_url TEXT NOT NULL,
+        file_name VARCHAR(255),
+        due_date DATE,
+        total_marks INTEGER,
+        published BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`;
+
+      await sql`CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(200) NOT NULL,
+        message TEXT NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        target_roles TEXT[] NOT NULL,
+        link VARCHAR(255),
+        created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP
+      )`;
+
+      await sql`CREATE TABLE IF NOT EXISTS chat_messages (
+        id SERIAL PRIMARY KEY,
+        sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        message TEXT,
+        message_type VARCHAR(20) DEFAULT 'text',
+        file_url TEXT,
+        file_name VARCHAR(255),
+        file_type VARCHAR(50),
+        file_size INTEGER,
+        reply_to_id INTEGER REFERENCES chat_messages(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        is_read BOOLEAN DEFAULT false,
+        read_at TIMESTAMP,
+        reactions JSONB DEFAULT '[]'::jsonb,
+        edited_at TIMESTAMP,
+        deleted_at TIMESTAMP,
+        deleted_by INTEGER
+      )`;
+
       res.status(200).json({ 
         success: true, 
         message: 'Database initialized successfully with all tables!' 

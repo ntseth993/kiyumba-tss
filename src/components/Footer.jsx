@@ -77,7 +77,7 @@ const Footer = () => {
         </div>
 
         <div className="footer-bottom">
-          <p>&copy; {currentYear} Kiyumba School. All rights reserved.</p>
+          <p>&copy; {currentYear} Kiyumba School. </p>
           <div className="footer-bottom-links">
             <a href="#">Privacy Policy</a>
             <span>•</span>

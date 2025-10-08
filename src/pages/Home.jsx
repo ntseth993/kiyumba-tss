@@ -20,29 +20,54 @@ const Home = () => {
       
       {/* Hero Section */}
       <section className="hero">
-        <div className="hero-content">
-          <h1 className="hero-title fade-in">Welcome to Kiyumba Technical School</h1>
-          <p className="hero-subtitle fade-in">
-            Transform your future with professional technical education. Learn Software Development, 
-            Fashion Design, Building Construction, or Wood Technology at levels L3, L4, and L5.
-          </p>
-          <div className="hero-buttons fade-in">
-            <Link to="/register" className="btn btn-primary btn-large">
-              Apply Now
-              <ArrowRight size={20} />
-            </Link>
-            <Link to="/visit/register" className="btn btn-secondary btn-large">
-              Parent Visit
-              <ArrowRight size={20} />
-            </Link>
-            <Link to="/about" className="btn btn-outline btn-large">
-              Learn More
-            </Link>
+        <div className="hero-overlay"></div>
+        <div className="hero-container">
+          <div className="hero-content">
+            <div className="hero-badge">
+              <span className="badge-dot"></span>
+              #1 Technical School in Rwanda
+            </div>
+            <h1 className="hero-title">
+              Shape Your Future with
+              <span className="gradient-text"> Professional Skills</span>
+            </h1>
+            <p className="hero-subtitle">
+              Join Rwanda's leading technical institution. Master Software Development, Fashion Design, 
+              Building Construction, or Wood Technology with hands-on training and industry-recognized 
+              certifications at L3, L4, and L5 levels.
+            </p>
+            <div className="hero-buttons">
+              <Link to="/register" className="btn btn-modern btn-primary">
+                <span>Start Your Journey</span>
+                <ArrowRight size={20} />
+              </Link>
+              <Link to="/about" className="btn btn-modern btn-glass">
+                <BookOpen size={20} />
+                <span>Explore Programs</span>
+              </Link>
+            </div>
           </div>
-        </div>
-        <div className="hero-image">
-          <div className="hero-image-placeholder">
-            <BookOpen size={120} strokeWidth={1} />
+          <div className="hero-visual">
+            <div className="floating-card card-1">
+              <BookOpen size={40} />
+              <h4>Software Development</h4>
+              <p>Build the future</p>
+            </div>
+            <div className="floating-card card-2">
+              <Award size={40} />
+              <h4>Certified Programs</h4>
+              <p>Industry recognized</p>
+            </div>
+            <div className="floating-card card-3">
+              <Users size={40} />
+              <h4>Expert Instructors</h4>
+              <p>Learn from the best</p>
+            </div>
+            <div className="hero-main-icon">
+              <div className="icon-gradient">
+                <BookOpen size={80} strokeWidth={1.5} />
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -102,7 +127,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
 
       {/* Programs Section */}
       <section className="programs">

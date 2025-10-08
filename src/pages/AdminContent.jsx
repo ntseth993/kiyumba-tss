@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Image, Video, MessageSquare, Upload, Trash2, Eye, FileUp } from 'lucide-react';
-import ImageEditorModal from '../components/ImageEditorModal';
 import './AdminContent.css';
 
 const AdminContent = () => {
@@ -20,8 +19,6 @@ const AdminContent = () => {
   const [editingPostId, setEditingPostId] = useState(null);
   const [editPost, setEditPost] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
-  const [imageEditorOpen, setImageEditorOpen] = useState(false);
-  const [editingImage, setEditingImage] = useState(null);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -30,48 +27,13 @@ const AdminContent = () => {
   }, []);
 
   const handleFileUpload = (e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-
-    // If multiple files selected, create a post per image quickly (no editor)
-    if (files.length > 1) {
-      const imageFiles = files.filter(f => f.type.startsWith('image/'));
-      if (imageFiles.length > 0) {
-        const newPosts = imageFiles.map((f) => ({
-          id: Date.now() + Math.random(),
-          type: 'image',
-          title: f.name.replace(/\.[^/.]+$/, ''),
-          content: '',
-          imageUrl: URL.createObjectURL(f),
-          textSize: 'medium',
-          visible: true,
-          author: 'Admin',
-          date: new Date().toISOString(),
-          likes: 0,
-          comments: [],
-          fileName: f.name
-        }));
-
-        const updated = [...newPosts, ...posts];
-        setPosts(updated);
-        localStorage.setItem('posts', JSON.stringify(updated));
-        // Clear file input
-        if (fileInputRef.current) fileInputRef.current.value = '';
-        alert(`${newPosts.length} posts created from uploaded images`);
-        return;
-      }
-    }
-
-    // Single file flow (existing behavior)
-    const file = files[0];
+    const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
         const content = event.target.result;
         if (file.type.startsWith('image/')) {
-          setNewPost({...newPost, type: 'image'});
-          setEditingImage(file);
-          setImageEditorOpen(true);
+          setNewPost({...newPost, type: 'image', imageUrl: content});
         } else if (file.type.startsWith('text/')) {
           setNewPost({...newPost, content: content});
         }
@@ -84,24 +46,6 @@ const AdminContent = () => {
         reader.readAsText(file);
       }
     }
-  };
-
-  // Handler to replace image for an existing post (opens editor)
-  const handleEditFile = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setEditingImage(file);
-    setImageEditorOpen(true);
-  };
-
-  const handleImageSave = (processedImage) => {
-    if (editingPostId) {
-      setEditPost(prev => ({ ...prev, imageUrl: URL.createObjectURL(processedImage) }));
-    } else {
-      setNewPost(prev => ({ ...prev, imageUrl: URL.createObjectURL(processedImage) }));
-    }
-    setImageEditorOpen(false);
-    setEditingImage(null);
   };
 
   const validateForm = () => {
@@ -183,20 +127,6 @@ const AdminContent = () => {
   const startEdit = (post) => {
     setEditingPostId(post.id);
     setEditPost({ ...post });
-  };
-
-  // open crop modal for editing existing post image
-  const editImage = async (imageUrl) => {
-    try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      const file = new File([blob], "image.jpg", { type: blob.type });
-      setEditingImage(file);
-      setImageEditorOpen(true);
-    } catch (error) {
-      console.error('Error loading image for editing:', error);
-      alert('Failed to load image for editing');
-    }
   };
 
   const cancelEdit = () => {
@@ -304,16 +234,6 @@ const AdminContent = () => {
                 <p className="file-info">Uploaded: {uploadedFile.name}</p>
               )}
             </div>
-
-            <ImageEditorModal
-              isOpen={imageEditorOpen}
-              onClose={() => {
-                setImageEditorOpen(false);
-                setEditingImage(null);
-              }}
-              onSave={handleImageSave}
-              initialImage={editingImage}
-            />
 
             <div className="form-group">
               <label>Title *</label>
@@ -440,14 +360,6 @@ const AdminContent = () => {
                       <div className="form-group">
                         <label>Image URL</label>
                         <input type="url" value={editPost.imageUrl || ''} onChange={(e) => handleEditChange('imageUrl', e.target.value)} />
-                        {editPost.imageUrl && (
-                          <div style={{ marginTop: '8px' }}>
-                            <button type="button" className="btn" onClick={() => editImage(editPost.imageUrl)}>Edit Image</button>
-                            <div style={{ marginTop: 8 }}>
-                              <label className="btn small">Replace image<input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleEditFile} /></label>
-                            </div>
-                          </div>
-                        )}
                       </div>
                       <div className="form-group">
                         <label>Video URL</label>
@@ -473,11 +385,7 @@ const AdminContent = () => {
                     </form>
                   ) : (
                     <>
-                      <p className="post-content" style={{ fontSize: post.textSize === 'small' ? '14px' : post.textSize === 'large' ? '18px' : '16px', maxHeight: 80, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {post.type === 'event' && post.content.length > 120
-                          ? post.content.slice(0, 120) + '... Read more'
-                          : post.content}
-                      </p>
+                      <p className="post-content" style={{ fontSize: post.textSize === 'small' ? '14px' : post.textSize === 'large' ? '18px' : '16px' }}>{post.content}</p>
                       {post.imageUrl && (
                         <div className="post-media">
                           <img src={post.imageUrl} alt={post.title} />

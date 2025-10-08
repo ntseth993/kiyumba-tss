@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Chat from '../components/Chat';
 import { Users, BookOpen, Award, DollarSign, TrendingUp, UserCheck, Calendar, Settings, FileText, Image } from 'lucide-react';
 import { getPosts } from '../services/postsService';
 import './AdminDashboard.css';
@@ -230,6 +231,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      <Chat />
       <Footer />
     </div>
   );

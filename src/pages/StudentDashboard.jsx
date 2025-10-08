@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Chat from '../components/Chat';
 import { BookOpen, Calendar, Award, FileText, Clock, TrendingUp, Bell, User } from 'lucide-react';
 import './StudentDashboard.css';
 
@@ -8,33 +9,11 @@ const StudentDashboard = () => {
   const { user } = useAuth();
 
   const courses = [
-    { id: 1, name: 'Mathematics', progress: 85, grade: 'A', teacher: 'Mr. Smith', program: 'software' },
-    { id: 2, name: 'English Literature', progress: 92, grade: 'A+', teacher: 'Mrs. Johnson', program: 'software' },
-    { id: 3, name: 'Physics', progress: 78, grade: 'B+', teacher: 'Dr. Williams', program: 'software' },
-    { id: 4, name: 'Chemistry', progress: 88, grade: 'A', teacher: 'Ms. Brown', program: 'fashion' },
+    { id: 1, name: 'Mathematics', progress: 85, grade: 'A', teacher: 'Mr. Smith' },
+    { id: 2, name: 'English Literature', progress: 92, grade: 'A+', teacher: 'Mrs. Johnson' },
+    { id: 3, name: 'Physics', progress: 78, grade: 'B+', teacher: 'Dr. Williams' },
+    { id: 4, name: 'Chemistry', progress: 88, grade: 'A', teacher: 'Ms. Brown' },
   ];
-
-  const [remoteCourses, setRemoteCourses] = useState([]);
-  const [assessments, setAssessments] = useState([]);
-
-  useEffect(() => {
-    const loadRemote = async () => {
-      try {
-        const c = await fetch('/api/courses').then(r=>r.json()).catch(()=>[]);
-        setRemoteCourses(c);
-        // load assessments for first course in same program as user
-        const program = user.program || (c[0] && c[0].program) || 'software';
-        const courseForProgram = c.find(x=>x.program===program) || c[0];
-        if (courseForProgram) {
-          const a = await fetch(`/api/assessments?course_id=${courseForProgram.id}`).then(r=>r.json()).catch(()=>[]);
-          setAssessments(a);
-        }
-      } catch (e) {
-        console.error('remote load failed', e);
-      }
-    };
-    loadRemote();
-  }, [user.program]);
 
   const upcomingEvents = [
     { id: 1, title: 'Math Exam', date: '2024-04-15', type: 'exam' },
@@ -233,6 +212,7 @@ const StudentDashboard = () => {
         </div>
       </div>
 
+      <Chat />
       <Footer />
     </div>
   );

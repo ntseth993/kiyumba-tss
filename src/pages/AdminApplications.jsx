@@ -12,29 +12,11 @@ const AdminApplications = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    // Resolve API base at runtime: try /config.json (runtime override), then VITE_API_URL, then same-origin
-    const resolveApiBase = async () => {
-      // attempt to read runtime config
-      try {
-        const cfgRes = await fetch('/config.json');
-        if (cfgRes.ok) {
-          const cfg = await cfgRes.json();
-          if (cfg && cfg.VITE_API_URL) return cfg.VITE_API_URL.replace(/\/+$/, '');
-        }
-      } catch (e) {
-        // ignore
-      }
-      // build-time env
-      if (import.meta.env && import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL.replace(/\/+$/, '');
-      // fallback to same-origin (useful if API is served from same host)
-      return window.location.origin;
-    };
-
     // Try loading applications from server API, fallback to localStorage
+    const API_BASE = import.meta.env.VITE_API_URL || '';
     const load = async () => {
-      const API_BASE = await resolveApiBase();
       try {
-        const res = await fetch(`${API_BASE.replace(/\/+$/, '')}/api/applications`);
+        const res = await fetch(`${API_BASE}/api/applications`);
         if (!res.ok) throw new Error('API fetch failed');
         const data = await res.json();
         // Map server fields to UI expected fields

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Chat from '../components/Chat';
 import { Users, BookOpen, Award, Calendar, Settings, FileText, MessageSquare, Bell } from 'lucide-react';
 import { getPosts } from '../services/postsService';
 import { getAllMessages } from '../services/messagesService';
@@ -176,6 +177,7 @@ const StaffDashboard = () => {
         </div>
       </div>
 
+      <Chat />
       <Footer />
     </div>
   );
