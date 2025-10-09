@@ -57,6 +57,81 @@ export const AuthProvider = ({ children }) => {
         return { success: true, user: userData };
       }
 
+      // Demo DOD account
+      if (email === 'dod@kiyumba.com' && password === 'dod123') {
+        console.log('DOD login successful');
+        const userData = {
+          id: 21,
+          name: 'Director of Discipline',
+          email: 'dod@kiyumba.com',
+          role: 'dod',
+          avatar: 'https://ui-avatars.com/api/?name=DOD&background=EF4444&color=fff'
+        };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return { success: true, user: userData };
+      }
+
+      // Demo DOS account
+      if (email === 'dos@kiyumba.com' && password === 'dos123') {
+        console.log('DOS login successful');
+        const userData = {
+          id: 22,
+          name: 'Director of Studies',
+          email: 'dos@kiyumba.com',
+          role: 'dos',
+          avatar: 'https://ui-avatars.com/api/?name=DOS&background=4F46E5&color=fff'
+        };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return { success: true, user: userData };
+      }
+
+      // Demo Accountant account
+      if (email === 'accountant@kiyumba.com' && password === 'accountant123') {
+        console.log('Accountant login successful');
+        const userData = {
+          id: 23,
+          name: 'School Accountant',
+          email: 'accountant@kiyumba.com',
+          role: 'accountant',
+          avatar: 'https://ui-avatars.com/api/?name=Accountant&background=10B981&color=fff'
+        };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return { success: true, user: userData };
+      }
+
+      // Demo Animateur account
+      if (email === 'animateur@kiyumba.com' && password === 'animateur123') {
+        console.log('Animateur login successful');
+        const userData = {
+          id: 24,
+          name: 'Activities Coordinator',
+          email: 'animateur@kiyumba.com',
+          role: 'animateur',
+          avatar: 'https://ui-avatars.com/api/?name=Animateur&background=F59E0B&color=fff'
+        };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return { success: true, user: userData };
+      }
+
+      // Demo Secretary account
+      if (email === 'secretary@kiyumba.com' && password === 'secretary123') {
+        console.log('Secretary login successful');
+        const userData = {
+          id: 25,
+          name: 'School Secretary',
+          email: 'secretary@kiyumba.com',
+          role: 'secretary',
+          avatar: 'https://ui-avatars.com/api/?name=Secretary&background=8B5CF6&color=fff'
+        };
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return { success: true, user: userData };
+      }
+
       // Demo teacher account
       if (email === 'teacher@kiyumba.com' && password === 'teacher123') {
         console.log('Teacher login successful');
@@ -115,7 +190,15 @@ export const AuthProvider = ({ children }) => {
     isAdmin: user?.role === 'admin',
     isStaff: user?.role === 'staff',
     isTeacher: user?.role === 'teacher',
-    isStudent: user?.role === 'student'
+    isStudent: user?.role === 'student',
+    isDOD: user?.role === 'dod',
+    isDOS: user?.role === 'dos',
+    isAccountant: user?.role === 'accountant',
+    isAnimateur: user?.role === 'animateur',
+    isSecretary: user?.role === 'secretary',
+    // Helper to check if user is any type of staff
+    isStaffMember: user?.role === 'staff' || user?.role === 'dod' || user?.role === 'dos' || 
+                  user?.role === 'accountant' || user?.role === 'animateur' || user?.role === 'secretary'
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -57,9 +57,45 @@ const Navbar = () => {
       navigate('/teacher/dashboard');
     } else if (user?.role === 'staff') {
       navigate('/staff/dashboard');
+    } else if (user?.role === 'dod') {
+      navigate('/dod/dashboard');
+    } else if (user?.role === 'dos') {
+      navigate('/dos/dashboard');
+    } else if (user?.role === 'accountant') {
+      navigate('/accountant/dashboard');
+    } else if (user?.role === 'animateur') {
+      navigate('/animateur/dashboard');
+    } else if (user?.role === 'secretary') {
+      navigate('/secretary/dashboard');
     }
-    toggleMobileMenu();
-    toggleUserMenu();
+    // Close menus after navigation
+    if (mobileMenuOpen) toggleMobileMenu();
+    if (showUserMenu) toggleUserMenu();
+  };
+
+  const handleSettingsClick = () => {
+    if (user?.role === 'admin') {
+      navigate('/admin/settings');
+    } else if (user?.role === 'student') {
+      navigate('/student/settings');
+    } else if (user?.role === 'teacher') {
+      navigate('/teacher/settings');
+    } else if (user?.role === 'staff') {
+      navigate('/staff/settings');
+    } else if (user?.role === 'dod') {
+      navigate('/dod/settings');
+    } else if (user?.role === 'dos') {
+      navigate('/dos/settings');
+    } else if (user?.role === 'accountant') {
+      navigate('/accountant/settings');
+    } else if (user?.role === 'animateur') {
+      navigate('/animateur/settings');
+    } else if (user?.role === 'secretary') {
+      navigate('/secretary/settings');
+    }
+    // Close menus after navigation
+    if (mobileMenuOpen) toggleMobileMenu();
+    if (showUserMenu) toggleUserMenu();
   };
 
   const handleThemeChange = (newTheme) => {
@@ -154,11 +190,10 @@ const Navbar = () => {
 
           {/* User Menu */}
           {isAuthenticated ? (
-            <div className="user-menu-container">
+            <div className="user-menu-container" ref={userMenuRef}>
               <button
                 className="user-menu-btn-modern"
                 onClick={toggleUserMenu}
-                ref={userMenuRef}
               >
                 <div className="user-avatar-modern">
                   <img
@@ -203,7 +238,7 @@ const Navbar = () => {
                       <User size={18} />
                       <span>Dashboard</span>
                     </button>
-                    <button className="dropdown-item-modern">
+                    <button onClick={handleSettingsClick} className="dropdown-item-modern">
                       <Settings size={18} />
                       <span>Settings</span>
                     </button>
@@ -309,6 +344,10 @@ const Navbar = () => {
                 <button onClick={handleDashboardClick} className="mobile-action-btn">
                   <User size={18} />
                   <span>Dashboard</span>
+                </button>
+                <button onClick={handleSettingsClick} className="mobile-action-btn">
+                  <Settings size={18} />
+                  <span>Settings</span>
                 </button>
                 <button onClick={handleLogoutClick} className="mobile-action-btn logout">
                   <LogOut size={18} />

@@ -75,7 +75,9 @@ const Chat = () => {
 
   const loadMessages = async () => {
     try {
-      const data = await getChatMessages(100, user.id);
+      // Don't pass user.id - we want ALL messages for everyone
+      const data = await getChatMessages(100, null);
+      console.log('Loaded messages:', data);
       setMessages(data);
       if (isOpen) {
         setUnreadCount(0);
@@ -104,6 +106,8 @@ const Chat = () => {
       await sendChatMessage({
         sender_id: user?.id || 1,
         sender_name: user?.name || 'Guest',
+        sender_role: user?.role || 'student',
+        sender_avatar: user?.avatar || null,
         message: newMessage.trim(),
         message_type: 'text'
       });

@@ -1,11 +1,16 @@
 const API_BASE = import.meta.env.VITE_API_URL || '';
 const USE_LOCALSTORAGE = true; // Use localStorage for now
+const CHAT_STORAGE_KEY = 'schoolCommunityMessages'; // Shared key for all users
 
 export const getChatMessages = async (limit = 100, userId = null) => {
-  // Use localStorage for demo/offline mode
+  // Use localStorage for demo/offline mode - shared across all users
   if (USE_LOCALSTORAGE) {
-    const messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
-    return messages.slice(-limit);
+    const messages = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || '[]');
+    // Sort by timestamp to show oldest first
+    const sortedMessages = messages.sort((a, b) => 
+      new Date(a.created_at) - new Date(b.created_at)
+    );
+    return sortedMessages.slice(-limit);
   }
 
   try {
@@ -19,24 +24,29 @@ export const getChatMessages = async (limit = 100, userId = null) => {
   } catch (error) {
     console.error('Error fetching chat messages:', error);
     // Fallback to localStorage
-    const messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
-    return messages.slice(-limit);
+    const messages = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || '[]');
+    const sortedMessages = messages.sort((a, b) => 
+      new Date(a.created_at) - new Date(b.created_at)
+    );
+    return sortedMessages.slice(-limit);
   }
 };
 
 export const sendChatMessage = async (messageData) => {
-  // Use localStorage for demo/offline mode
+  // Use localStorage for demo/offline mode - shared across all users
   if (USE_LOCALSTORAGE) {
-    const messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+    const messages = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || '[]');
     const newMessage = {
       id: Date.now(),
       ...messageData,
       created_at: new Date().toISOString(),
       sender_name: messageData.sender_name || 'User',
-      reactions: []
+      reactions: [],
+      is_read: false
     };
     messages.push(newMessage);
-    localStorage.setItem('chatMessages', JSON.stringify(messages));
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+    console.log('Message sent to shared chat:', newMessage);
     return newMessage;
   }
 
@@ -51,16 +61,17 @@ export const sendChatMessage = async (messageData) => {
   } catch (error) {
     console.error('Error sending message:', error);
     // Fallback to localStorage
-    const messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+    const messages = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || '[]');
     const newMessage = {
       id: Date.now(),
       ...messageData,
       created_at: new Date().toISOString(),
       sender_name: messageData.sender_name || 'User',
-      reactions: []
+      reactions: [],
+      is_read: false
     };
     messages.push(newMessage);
-    localStorage.setItem('chatMessages', JSON.stringify(messages));
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
     return newMessage;
   }
 };
@@ -68,9 +79,9 @@ export const sendChatMessage = async (messageData) => {
 export const deleteChatMessage = async (messageId, userId) => {
   // Use localStorage for demo/offline mode
   if (USE_LOCALSTORAGE) {
-    const messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+    const messages = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || '[]');
     const filtered = messages.filter(m => m.id !== messageId);
-    localStorage.setItem('chatMessages', JSON.stringify(filtered));
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(filtered));
     return true;
   }
 
@@ -83,9 +94,9 @@ export const deleteChatMessage = async (messageId, userId) => {
   } catch (error) {
     console.error('Error deleting message:', error);
     // Fallback to localStorage
-    const messages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+    const messages = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || '[]');
     const filtered = messages.filter(m => m.id !== messageId);
-    localStorage.setItem('chatMessages', JSON.stringify(filtered));
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(filtered));
     return true;
   }
 };

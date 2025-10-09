@@ -3,21 +3,36 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Chat from '../components/Chat';
+import TeacherExamManagement from '../components/TeacherExamManagement';
 import { BookOpen, Calendar, FileText, User } from 'lucide-react';
+import { getExamsByTeacher } from '../services/examsService';
 import './TeacherDashboard.css';
 
 const TeacherDashboard = () => {
 	const { user } = useAuth();
 	const [courses, setCourses] = useState([]);
+	const [examsCount, setExamsCount] = useState(0);
 
 	useEffect(() => {
+		loadDashboardData();
+	}, [user]);
+
+	const loadDashboardData = async () => {
 		// placeholder: in the real app this would call a service
 		setCourses([
 			{ id: 1, name: 'Mathematics 101', students: 30 },
 			{ id: 2, name: 'Physics 201', students: 24 },
 			{ id: 3, name: 'Chemistry 110', students: 28 },
 		]);
-	}, []);
+
+		// Load exams count
+		try {
+			const exams = await getExamsByTeacher(user.id.toString());
+			setExamsCount(exams.length);
+		} catch (error) {
+			console.error('Error loading exams:', error);
+		}
+	};
 
 	return (
 		<div className="teacher-dashboard">
@@ -77,6 +92,11 @@ const TeacherDashboard = () => {
 				</div>
 
 				<div className="dashboard-grid">
+					{/* Exam Management Section */}
+					<div className="dashboard-section full-width">
+						<TeacherExamManagement />
+					</div>
+
 					<div className="dashboard-section">
 						<div className="section-header">
 							<h2>

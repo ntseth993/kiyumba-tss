@@ -10,8 +10,16 @@ import AdminApplications from './pages/AdminApplications';
 import AdminUserManagement from './pages/AdminUserManagement';
 import AdminContent from './pages/AdminContent';
 import AdminSettings from './pages/AdminSettings';
+import TeacherSettings from './pages/TeacherSettings';
+import StaffSettings from './pages/StaffSettings';
+import StudentSettings from './pages/StudentSettings';
 import StaffDashboard from './pages/StaffDashboard';
 import TeacherDashboard from './pages/TeacherDashboard';
+import DODDashboard from './pages/DODDashboard';
+import DOSDashboard from './pages/DOSDashboard';
+import AccountantDashboard from './pages/AccountantDashboard';
+import AnimateurDashboard from './pages/AnimateurDashboard';
+import SecretaryDashboard from './pages/SecretaryDashboard';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import './App.css';
@@ -46,7 +54,7 @@ const ProtectedRoute = ({ children, requiredRole, allowedRoles }) => {
 
 function AppRoutes() {
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -110,10 +118,106 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/dod/dashboard"
+          element={
+            <ProtectedRoute requiredRole="dod">
+              <DODDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dos/dashboard"
+          element={
+            <ProtectedRoute requiredRole="dos">
+              <DOSDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/accountant/dashboard"
+          element={
+            <ProtectedRoute requiredRole="accountant">
+              <AccountantDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/animateur/dashboard"
+          element={
+            <ProtectedRoute requiredRole="animateur">
+              <AnimateurDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/secretary/dashboard"
+          element={
+            <ProtectedRoute requiredRole="secretary">
+              <SecretaryDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/teacher/dashboard"
           element={
             <ProtectedRoute requiredRole="teacher">
               <TeacherDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teacher/settings"
+          element={
+            <ProtectedRoute requiredRole="teacher">
+              <TeacherSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dod/settings"
+          element={
+            <ProtectedRoute requiredRole="dod">
+              <StaffSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dos/settings"
+          element={
+            <ProtectedRoute requiredRole="dos">
+              <StaffSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/accountant/settings"
+          element={
+            <ProtectedRoute requiredRole="accountant">
+              <StaffSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/animateur/settings"
+          element={
+            <ProtectedRoute requiredRole="animateur">
+              <StaffSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/secretary/settings"
+          element={
+            <ProtectedRoute requiredRole="secretary">
+              <StaffSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/settings"
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentSettings />
             </ProtectedRoute>
           }
         />

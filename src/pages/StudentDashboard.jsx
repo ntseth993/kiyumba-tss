@@ -2,6 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Chat from '../components/Chat';
+import StudentExamView from '../components/StudentExamView';
 import { BookOpen, Calendar, Award, FileText, Clock, TrendingUp, Bell, User } from 'lucide-react';
 import './StudentDashboard.css';
 
@@ -88,6 +89,10 @@ const StudentDashboard = () => {
 
         {/* Main Content Grid */}
         <div className="dashboard-grid">
+          {/* Exams Section */}
+          <div className="dashboard-section full-width">
+            <StudentExamView />
+          </div>
           {/* Courses Section */}
           <div className="dashboard-section">
             <div className="section-header">

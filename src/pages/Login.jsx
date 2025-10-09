@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { GraduationCap, Mail, Lock, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import LoginDebug from '../components/LoginDebug';
 import './Login.css';
 
 const Login = () => {
@@ -27,6 +26,16 @@ const Login = () => {
         navigate('/admin/dashboard');
       } else if (result.user.role === 'staff') {
         navigate('/staff/dashboard');
+      } else if (result.user.role === 'dod') {
+        navigate('/dod/dashboard');
+      } else if (result.user.role === 'dos') {
+        navigate('/dos/dashboard');
+      } else if (result.user.role === 'accountant') {
+        navigate('/accountant/dashboard');
+      } else if (result.user.role === 'animateur') {
+        navigate('/animateur/dashboard');
+      } else if (result.user.role === 'secretary') {
+        navigate('/secretary/dashboard');
       } else if (result.user.role === 'teacher') {
         navigate('/teacher/dashboard');
       } else if (result.user.role === 'student') {
@@ -46,6 +55,21 @@ const Login = () => {
     } else if (role === 'staff') {
       setEmail('staff@kiyumba.com');
       setPassword('staff123');
+    } else if (role === 'dod') {
+      setEmail('dod@kiyumba.com');
+      setPassword('dod123');
+    } else if (role === 'dos') {
+      setEmail('dos@kiyumba.com');
+      setPassword('dos123');
+    } else if (role === 'accountant') {
+      setEmail('accountant@kiyumba.com');
+      setPassword('accountant123');
+    } else if (role === 'animateur') {
+      setEmail('animateur@kiyumba.com');
+      setPassword('animateur123');
+    } else if (role === 'secretary') {
+      setEmail('secretary@kiyumba.com');
+      setPassword('secretary123');
     } else if (role === 'teacher') {
       setEmail('teacher@kiyumba.com');
       setPassword('teacher123');
@@ -58,7 +82,6 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      <LoginDebug />
       <Link to="/" className="back-button">
         <ArrowLeft size={20} />
         Back to Home
@@ -77,6 +100,9 @@ const Login = () => {
           {error && (
             <div className="error-message">
               {error}
+              <p style={{fontSize: '12px', marginTop: '8px'}}>
+                Use demo accounts below or correct credentials
+              </p>
             </div>
           )}
 
@@ -124,11 +150,15 @@ const Login = () => {
           {/* Demo credentials for testing */}
           <div className="demo-credentials">
             <h3>Demo Accounts</h3>
+            <p style={{fontSize: '13px', color: '#666', marginBottom: '12px'}}>
+              Click to auto-fill credentials
+            </p>
             <div className="demo-buttons">
               <button 
                 type="button" 
                 className="demo-btn admin" 
                 onClick={() => fillDemoCredentials('admin')}
+                title="admin@kiyumba.com / admin123"
               >
                 Admin
               </button>
@@ -136,13 +166,55 @@ const Login = () => {
                 type="button" 
                 className="demo-btn staff" 
                 onClick={() => fillDemoCredentials('staff')}
+                title="staff@kiyumba.com / staff123"
               >
                 Staff
               </button>
               <button 
                 type="button" 
+                className="demo-btn dod" 
+                onClick={() => fillDemoCredentials('dod')}
+                title="dod@kiyumba.com / dod123"
+              >
+                DOD
+              </button>
+              <button 
+                type="button" 
+                className="demo-btn dos" 
+                onClick={() => fillDemoCredentials('dos')}
+                title="dos@kiyumba.com / dos123"
+              >
+                DOS
+              </button>
+              <button 
+                type="button" 
+                className="demo-btn accountant" 
+                onClick={() => fillDemoCredentials('accountant')}
+                title="accountant@kiyumba.com / accountant123"
+              >
+                Accountant
+              </button>
+              <button 
+                type="button" 
+                className="demo-btn animateur" 
+                onClick={() => fillDemoCredentials('animateur')}
+                title="animateur@kiyumba.com / animateur123"
+              >
+                Animateur
+              </button>
+              <button 
+                type="button" 
+                className="demo-btn secretary" 
+                onClick={() => fillDemoCredentials('secretary')}
+                title="secretary@kiyumba.com / secretary123"
+              >
+                Secretary
+              </button>
+              <button 
+                type="button" 
                 className="demo-btn teacher" 
                 onClick={() => fillDemoCredentials('teacher')}
+                title="teacher@kiyumba.com / teacher123"
               >
                 Teacher
               </button>
@@ -150,9 +222,13 @@ const Login = () => {
                 type="button" 
                 className="demo-btn student" 
                 onClick={() => fillDemoCredentials('student')}
+                title="student@kiyumba.com / student123"
               >
                 Student
               </button>
+            </div>
+            <div style={{marginTop: '12px', fontSize: '12px', color: '#666', textAlign: 'center'}}>
+              <strong>Correct format:</strong> role@kiyumba.com (not @kiyumbaschool.com)
             </div>
           </div>
         </div>

@@ -36,9 +36,9 @@ const AdminUserManagement = () => {
 
   const loadUsers = () => {
     const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    // Add default admin and student if not exists
+    // Add default users if not exists
     if (storedUsers.length === 0) {
-      storedUsers.push(
+      const defaultUsers = [
         {
           id: 1,
           name: 'Admin User',
@@ -49,6 +49,62 @@ const AdminUserManagement = () => {
         },
         {
           id: 2,
+          name: 'Staff Member',
+          email: 'staff@kiyumba.com',
+          role: 'staff',
+          avatar: 'https://ui-avatars.com/api/?name=Staff+Member&background=10B981&color=fff',
+          createdDate: new Date().toISOString()
+        },
+        {
+          id: 21,
+          name: 'Director of Discipline',
+          email: 'dod@kiyumba.com',
+          role: 'dod',
+          avatar: 'https://ui-avatars.com/api/?name=DOD&background=EF4444&color=fff',
+          createdDate: new Date().toISOString()
+        },
+        {
+          id: 22,
+          name: 'Director of Studies',
+          email: 'dos@kiyumba.com',
+          role: 'dos',
+          avatar: 'https://ui-avatars.com/api/?name=DOS&background=4F46E5&color=fff',
+          createdDate: new Date().toISOString()
+        },
+        {
+          id: 23,
+          name: 'School Accountant',
+          email: 'accountant@kiyumba.com',
+          role: 'accountant',
+          avatar: 'https://ui-avatars.com/api/?name=Accountant&background=10B981&color=fff',
+          createdDate: new Date().toISOString()
+        },
+        {
+          id: 24,
+          name: 'Activities Coordinator',
+          email: 'animateur@kiyumba.com',
+          role: 'animateur',
+          avatar: 'https://ui-avatars.com/api/?name=Animateur&background=F59E0B&color=fff',
+          createdDate: new Date().toISOString()
+        },
+        {
+          id: 25,
+          name: 'School Secretary',
+          email: 'secretary@kiyumba.com',
+          role: 'secretary',
+          avatar: 'https://ui-avatars.com/api/?name=Secretary&background=8B5CF6&color=fff',
+          createdDate: new Date().toISOString()
+        },
+        {
+          id: 3,
+          name: 'Teacher User',
+          email: 'teacher@kiyumba.com',
+          role: 'teacher',
+          avatar: 'https://ui-avatars.com/api/?name=Teacher+User&background=F59E0B&color=fff',
+          createdDate: new Date().toISOString()
+        },
+        {
+          id: 4,
           name: 'John Doe',
           email: 'student@kiyumba.com',
           role: 'student',
@@ -58,11 +114,14 @@ const AdminUserManagement = () => {
           avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=10B981&color=fff',
           createdDate: new Date().toISOString()
         }
-      );
-      localStorage.setItem('users', JSON.stringify(storedUsers));
+      ];
+      localStorage.setItem('users', JSON.stringify(defaultUsers));
+      setUsers(defaultUsers);
+      setFilteredUsers(defaultUsers);
+    } else {
+      setUsers(storedUsers);
+      setFilteredUsers(storedUsers);
     }
-    setUsers(storedUsers);
-    setFilteredUsers(storedUsers);
   };
 
   const handleRoleChange = (userId, newRole) => {
@@ -93,7 +152,12 @@ const AdminUserManagement = () => {
       admin: 'Administrator',
       student: 'Student',
       teacher: 'Teacher',
-      staff: 'Staff'
+      staff: 'Staff',
+      dod: 'Director of Discipline',
+      dos: 'Director of Studies',
+      accountant: 'Accountant',
+      animateur: 'Animateur',
+      secretary: 'Secretary'
     };
     return roles[role] || role;
   };
@@ -104,6 +168,16 @@ const AdminUserManagement = () => {
         return <Shield size={16} />;
       case 'teacher':
         return <UserCheck size={16} />;
+      case 'dod':
+        return <Users size={16} />;
+      case 'dos':
+        return <UserCheck size={16} />;
+      case 'accountant':
+        return <Users size={16} />;
+      case 'animateur':
+        return <Users size={16} />;
+      case 'secretary':
+        return <Users size={16} />;
       default:
         return <Users size={16} />;
     }
@@ -114,7 +188,12 @@ const AdminUserManagement = () => {
     admin: users.filter(u => u.role === 'admin').length,
     student: users.filter(u => u.role === 'student').length,
     teacher: users.filter(u => u.role === 'teacher').length,
-    staff: users.filter(u => u.role === 'staff').length
+    staff: users.filter(u => u.role === 'staff').length,
+    dod: users.filter(u => u.role === 'dod').length,
+    dos: users.filter(u => u.role === 'dos').length,
+    accountant: users.filter(u => u.role === 'accountant').length,
+    animateur: users.filter(u => u.role === 'animateur').length,
+    secretary: users.filter(u => u.role === 'secretary').length
   };
 
   return (
@@ -209,6 +288,36 @@ const AdminUserManagement = () => {
               onClick={() => setRoleFilter('staff')}
             >
               Staff ({roleCounts.staff})
+            </button>
+            <button
+              className={`filter-tab ${roleFilter === 'dod' ? 'active' : ''}`}
+              onClick={() => setRoleFilter('dod')}
+            >
+              DOD ({roleCounts.dod})
+            </button>
+            <button
+              className={`filter-tab ${roleFilter === 'dos' ? 'active' : ''}`}
+              onClick={() => setRoleFilter('dos')}
+            >
+              DOS ({roleCounts.dos})
+            </button>
+            <button
+              className={`filter-tab ${roleFilter === 'accountant' ? 'active' : ''}`}
+              onClick={() => setRoleFilter('accountant')}
+            >
+              Accountant ({roleCounts.accountant})
+            </button>
+            <button
+              className={`filter-tab ${roleFilter === 'animateur' ? 'active' : ''}`}
+              onClick={() => setRoleFilter('animateur')}
+            >
+              Animateur ({roleCounts.animateur})
+            </button>
+            <button
+              className={`filter-tab ${roleFilter === 'secretary' ? 'active' : ''}`}
+              onClick={() => setRoleFilter('secretary')}
+            >
+              Secretary ({roleCounts.secretary})
             </button>
           </div>
         </div>
@@ -311,7 +420,7 @@ const AdminUserManagement = () => {
                 <div className="role-selection">
                   <h4>Select New Role:</h4>
                   <div className="role-options">
-                    {['admin', 'teacher', 'staff', 'student'].map(role => (
+                    {['admin', 'teacher', 'staff', 'dod', 'dos', 'accountant', 'animateur', 'secretary', 'student'].map(role => (
                       <button
                         key={role}
                         className={`role-option ${selectedUser.role === role ? 'current' : ''}`}

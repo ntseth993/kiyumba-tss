@@ -26,6 +26,20 @@ const Navbar = () => {
       navigate('/admin/dashboard');
     } else if (user?.role === 'student') {
       navigate('/student/dashboard');
+    } else if (user?.role === 'teacher') {
+      navigate('/teacher/dashboard');
+    } else if (user?.role === 'staff') {
+      navigate('/staff/dashboard');
+    } else if (user?.role === 'dod') {
+      navigate('/dod/dashboard');
+    } else if (user?.role === 'dos') {
+      navigate('/dos/dashboard');
+    } else if (user?.role === 'accountant') {
+      navigate('/accountant/dashboard');
+    } else if (user?.role === 'animateur') {
+      navigate('/animateur/dashboard');
+    } else if (user?.role === 'secretary') {
+      navigate('/secretary/dashboard');
     }
     // Close menus after navigation
     toggleMobileMenu();
