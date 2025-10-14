@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { FileText, Users, BookOpen } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Chat from '../components/Chat';
 import TeacherExamManagement from '../components/TeacherExamManagement';
-import { BookOpen, Calendar, FileText, User } from 'lucide-react';
-import { getExamsByTeacher } from '../services/examsService';
+import SODDashboard from '../components/departments/SODDashboard';
+import WODDashboard from '../components/departments/WODDashboard';
+import BUCDashboard from '../components/departments/BUCDashboard';
+import FashionDashboard from '../components/departments/FashionDashboard';
+import ProfilePictureUpload from '../components/ProfilePictureUpload';
+import { getDepartmentById } from '../services/departmentsService';
 import './TeacherDashboard.css';
 
 const TeacherDashboard = () => {
@@ -18,12 +23,21 @@ const TeacherDashboard = () => {
 	}, [user]);
 
 	const loadDashboardData = async () => {
-		// placeholder: in the real app this would call a service
-		setCourses([
-			{ id: 1, name: 'Mathematics 101', students: 30 },
-			{ id: 2, name: 'Physics 201', students: 24 },
-			{ id: 3, name: 'Chemistry 110', students: 28 },
-		]);
+		// Load department-specific courses
+		if (user?.department) {
+			const department = getDepartmentById(user.department);
+			setCourses([
+				{ id: 1, name: `${department.name} - Level 1`, students: 30 },
+				{ id: 2, name: `${department.name} - Level 2`, students: 24 },
+				{ id: 3, name: `${department.name} - Advanced`, students: 28 },
+			]);
+		} else {
+			setCourses([
+				{ id: 1, name: 'General Course 1', students: 30 },
+				{ id: 2, name: 'General Course 2', students: 24 },
+				{ id: 3, name: 'General Course 3', students: 28 },
+			]);
+		}
 
 		// Load exams count
 		try {
@@ -34,82 +48,79 @@ const TeacherDashboard = () => {
 		}
 	};
 
+	// Render department-specific dashboard
+	const renderDepartmentDashboard = () => {
+		if (!user?.department) {
+			return (
+				<div className="no-department">
+					<h3>Please select a department to view your specialized dashboard</h3>
+					<p>Go to Department Selection to choose your teaching department</p>
+				</div>
+			);
+		}
+
+		const department = getDepartmentById(user.department);
+
+		switch (user.department) {
+			case 'sod':
+				return <SODDashboard user={user} />;
+			case 'wod':
+				return <WODDashboard user={user} />;
+			case 'buc':
+				return <BUCDashboard user={user} />;
+			case 'fashion':
+				return <FashionDashboard user={user} />;
+			default:
+				// General subjects
+				return <GeneralSubjectDashboard user={user} subjectName={department.name} subjectColor={department.color} />;
+		}
+	};
 	return (
 		<div className="teacher-dashboard">
 			<Navbar />
 
 			<div className="dashboard-container">
-				<div className="dashboard-header">
-					<div className="welcome-section">
-						<img src={user?.avatar} alt={user?.name} className="user-avatar" />
-						<div>
-							<h1>Welcome, {user?.name}</h1>
-							<p>Teacher Dashboard</p>
-						</div>
-					</div>
-				</div>
+				{/* Department-specific dashboard content */}
+				{renderDepartmentDashboard()}
 
-				<div className="stats-grid">
-					<div className="stat-card card">
-						<div className="stat-icon" style={{ backgroundColor: '#EEF2FF' }}>
-							<BookOpen size={24} color="#4F46E5" />
-						</div>
-						<div className="stat-content">
-							<h3>{courses.length}</h3>
-							<p>Courses</p>
-						</div>
+				{/* General teacher tools */}
+				<div className="teacher-tools-section">
+					<div className="section-header">
+						<h2>Teacher Tools</h2>
 					</div>
 
-					<div className="stat-card card">
-						<div className="stat-icon" style={{ backgroundColor: '#F0FDF4' }}>
-							<User size={24} color="#10B981" />
+					<div className="tools-grid">
+						<div className="tool-card">
+							<div className="tool-icon">
+								<FileText size={24} />
+							</div>
+							<div className="tool-content">
+								<h3>Exam Management</h3>
+								<p>Create and manage exams for your classes</p>
+								<button className="btn btn-primary">Manage Exams</button>
+							</div>
 						</div>
-						<div className="stat-content">
-							<h3>{courses.reduce((sum, c) => sum + c.students, 0)}</h3>
-							<p>Total Students</p>
-						</div>
-					</div>
 
-					<div className="stat-card card">
-						<div className="stat-icon" style={{ backgroundColor: '#FEF3C7' }}>
-							<Calendar size={24} color="#F59E0B" />
+						<div className="tool-card">
+							<div className="tool-icon">
+								<BookOpen size={24} />
+							</div>
+							<div className="tool-content">
+								<h3>Course Materials</h3>
+								<p>Upload and organize course materials</p>
+								<button className="btn btn-secondary">View Materials</button>
+							</div>
 						</div>
-						<div className="stat-content">
-							<h3>3</h3>
-							<p>Upcoming Events</p>
-						</div>
-					</div>
 
-					<div className="stat-card card">
-						<div className="stat-icon" style={{ backgroundColor: '#FEE2E2' }}>
-							<FileText size={24} color="#EF4444" />
-						</div>
-						<div className="stat-content">
-							<h3>5</h3>
-							<p>Assignments</p>
-						</div>
-					</div>
-				</div>
-
-				<div className="dashboard-grid">
-					{/* Exam Management Section */}
-					<div className="dashboard-section full-width">
-						<TeacherExamManagement />
-					</div>
-
-					<div className="dashboard-section">
-						<div className="section-header">
-							<h2>
-								<BookOpen size={20} /> My Courses
-							</h2>
-						</div>
-						<div className="courses-list">
-							{courses.map((c) => (
-								<div key={c.id} className="course-card card">
-									<h3>{c.name}</h3>
-									<p>{c.students} students</p>
-								</div>
-							))}
+						<div className="tool-card">
+							<div className="tool-icon">
+								<Users size={24} />
+							</div>
+							<div className="tool-content">
+								<h3>Student Progress</h3>
+								<p>Track student performance and grades</p>
+								<button className="btn btn-secondary">View Progress</button>
+							</div>
 						</div>
 					</div>
 				</div>

@@ -1,12 +1,10 @@
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { useNavbar } from '../hooks/useApp';
-import {
-  Menu,
-  X,
-  GraduationCap,
-  LogOut,
+import { 
+  Menu, 
+  X, 
   User,
   Sun,
   Moon,
@@ -16,9 +14,18 @@ import {
   Search,
   Smile,
   Paperclip,
-  Send
+  Send,
+  LogOut, 
+  Home, 
+  BookOpen, 
+  Users,
+  GraduationCap,
+  Calendar,
+  DollarSign,
+  FileText
 } from 'lucide-react';
-import { useState } from 'react';
+import ImpersonationBanner from './ImpersonationBanner';
+import NotificationBell from './NotificationBell';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -26,26 +33,25 @@ const Navbar = () => {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
-  // Use the navbar hook for state management
-  const {
-    mobileMenuOpen,
-    showUserMenu,
-    showThemeMenu,
-    userMenuRef,
-    themeMenuRef,
-    toggleMobileMenu,
-    toggleUserMenu,
-    toggleThemeMenu,
-    handleSearch,
-    handleLogout,
-    getRoleBadgeColor
-  } = useNavbar(user);
-
+  // State management
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Refs for click outside detection
+  const userMenuRef = useRef(null);
+  const themeMenuRef = useRef(null);
+
+  // Toggle functions
+  const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
+  const toggleUserMenu = () => setShowUserMenu(!showUserMenu);
+  const toggleThemeMenu = () => setShowThemeMenu(!showThemeMenu);
 
   // Enhanced logout function
   const handleLogoutClick = () => {
-    handleLogout(logout, navigate);
+    logout();
+    navigate('/login');
   };
 
   const handleDashboardClick = () => {
@@ -54,7 +60,11 @@ const Navbar = () => {
     } else if (user?.role === 'student') {
       navigate('/student/dashboard');
     } else if (user?.role === 'teacher') {
-      navigate('/teacher/dashboard');
+      if (user?.requiresDepartmentSelection) {
+        navigate('/teacher/department-selection');
+      } else {
+        navigate('/teacher/dashboard');
+      }
     } else if (user?.role === 'staff') {
       navigate('/staff/dashboard');
     } else if (user?.role === 'dod') {
@@ -103,6 +113,22 @@ const Navbar = () => {
     toggleThemeMenu();
   };
 
+  // Helper function to get role badge colors
+  const getRoleBadgeColor = (role) => {
+    const colors = {
+      admin: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      teacher: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      student: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      staff: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      dod: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      dos: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+      accountant: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+      animateur: 'linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%)',
+      secretary: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)'
+    };
+    return colors[role] || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+  };
+
   return (
     <nav className="navbar-modern">
       <div className="navbar-container-modern">
@@ -123,6 +149,28 @@ const Navbar = () => {
           <Link to="/about" className="nav-link-modern">About</Link>
           <Link to="/contact" className="nav-link-modern">Contact</Link>
 
+          {/* New Feature Links - Role Based */}
+          {isAuthenticated && ['teacher', 'dod', 'dos', 'admin', 'staff'].includes(user?.role) && (
+            <Link to="/attendance" className="nav-link-modern">
+              <Calendar size={16} />
+              <span>Attendance</span>
+            </Link>
+          )}
+          
+          {isAuthenticated && ['accountant', 'dos', 'admin'].includes(user?.role) && (
+            <Link to="/payments" className="nav-link-modern">
+              <DollarSign size={16} />
+              <span>Payments</span>
+            </Link>
+          )}
+          
+          {isAuthenticated && ['teacher', 'dod', 'dos', 'admin', 'staff', 'secretary'].includes(user?.role) && (
+            <Link to="/reports" className="nav-link-modern">
+              <FileText size={16} />
+              <span>Reports</span>
+            </Link>
+          )}
+
           {/* Search Bar */}
           <div className="navbar-search-modern">
             <Search size={18} />
@@ -131,10 +179,7 @@ const Navbar = () => {
               placeholder="Search..."
               className="search-input-modern"
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                handleSearch(e.target.value);
-              }}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
@@ -181,12 +226,7 @@ const Navbar = () => {
           </div>
 
           {/* Notifications */}
-          {isAuthenticated && (
-            <button className="navbar-icon-btn-modern" title="Notifications">
-              <Bell size={20} />
-              <span className="notification-badge">3</span>
-            </button>
-          )}
+          {isAuthenticated && <NotificationBell />}
 
           {/* User Menu */}
           {isAuthenticated ? (
@@ -305,6 +345,28 @@ const Navbar = () => {
               Contact
             </Link>
 
+            {/* New Feature Links - Role Based */}
+            {isAuthenticated && ['teacher', 'dod', 'dos', 'admin', 'staff'].includes(user?.role) && (
+              <Link to="/attendance" className="mobile-nav-link" onClick={toggleMobileMenu}>
+                <Calendar size={18} />
+                <span>Attendance</span>
+              </Link>
+            )}
+            
+            {isAuthenticated && ['accountant', 'dos', 'admin'].includes(user?.role) && (
+              <Link to="/payments" className="mobile-nav-link" onClick={toggleMobileMenu}>
+                <DollarSign size={18} />
+                <span>Payments</span>
+              </Link>
+            )}
+            
+            {isAuthenticated && ['teacher', 'dod', 'dos', 'admin', 'staff', 'secretary'].includes(user?.role) && (
+              <Link to="/reports" className="mobile-nav-link" onClick={toggleMobileMenu}>
+                <FileText size={18} />
+                <span>Reports</span>
+              </Link>
+            )}
+
             {/* Theme Toggle in Mobile */}
             <div className="mobile-theme-toggle">
               <button
@@ -378,6 +440,9 @@ const Navbar = () => {
           }}
         />
       )}
+
+      {/* Impersonation Banner */}
+      <ImpersonationBanner />
     </nav>
   );
 };

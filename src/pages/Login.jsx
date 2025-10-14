@@ -37,7 +37,11 @@ const Login = () => {
       } else if (result.user.role === 'secretary') {
         navigate('/secretary/dashboard');
       } else if (result.user.role === 'teacher') {
-        navigate('/teacher/dashboard');
+        if (result.requiresDepartmentSelection) {
+          navigate('/teacher/department-selection');
+        } else {
+          navigate('/teacher/dashboard');
+        }
       } else if (result.user.role === 'student') {
         navigate('/student/dashboard');
       }

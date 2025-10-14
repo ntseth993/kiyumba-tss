@@ -148,9 +148,37 @@ npm run preview
 - ✅ See exam details (date, duration, marks)
 - ✅ Filter exams by status (upcoming, past, all)
 
-**Test Accounts:**
-- Teacher: `teacher@kiyumba.com` / `teacher123`
-- Student: `student@kiyumba.com` / `student123`
+### 👨‍🏫 Department-Based Teacher System
+
+**Teachers now login according to their specific departments:**
+
+**Trade Departments:**
+1. **SOD (School of Design)** - `sod` - Creative design and visual arts
+2. **WOD (Workshop of Development)** - `wod` - Technical skills and workshop training
+3. **BUC (Business Unit Commerce)** - `buc` - Business and commerce education
+4. **FASHION** - `fashion` - Fashion design and textile arts
+
+**General Subjects:**
+5. **English** - `english` - English language and literature
+6. **Kinyarwanda** - `kinyarwanda` - Kinyarwanda language and culture
+7. **Mathematics** - `mathematics` - Mathematics and numerical sciences
+8. **Physics** - `physics` - Physics and physical sciences
+9. **ICT** - `ict` - Computer science and technology
+10. **Sports** - `sports` - Physical education and sports
+11. **French** - `french` - French language and culture
+
+**How it works:**
+- Teachers login with `teacher@kiyumba.com` / `teacher123`
+- After login, they select their department from a beautiful interface
+- Each department shows specialized dashboard content
+- Teachers can access department-specific tools and resources
+- Department selection persists across sessions
+
+**Test the Department System:**
+1. Login as teacher: `teacher@kiyumba.com` / `teacher123`
+2. Select any department from the department selection screen
+3. View the specialized dashboard for that department
+4. Try different departments to see different content
 
 ### 👥 Role-Based Staff Dashboards
 
@@ -236,22 +264,29 @@ npm run preview
    - Change user roles using the edit function
    - All new staff roles are now manageable
 
-4. **Test Exam Management:**
-   - Login as Teacher
-   - Go to Dashboard → Create New Exam
-   - Fill in exam details and upload a file
-   - Login as Student
-   - Go to Dashboard → View exams for your class
+42. **Test Department-Based Teacher System:**
+   - Login as teacher: `teacher@kiyumba.com` / `teacher123`
+   - You'll be redirected to department selection
+   - Choose any department (SOD, WOD, BUC, FASHION, or general subjects)
+   - View the specialized dashboard with department-specific content
+   - Try different departments to see different interfaces
+   - Each department shows relevant stats and tools
 
-5. **Test Navigation:**
+43. **Test Exam Management:**
+   - Login as Teacher (with any department selected)
+   - Go to "Teacher Tools" → "Exam Management"
+   - Create a new exam with file upload
+   - Login as Student to view available exams
+
+4. **Test Navigation:**
    - Click "Dashboard" in the top navigation
    - Verify it redirects to the correct role-specific dashboard
    - Click "Settings" to verify role-specific settings pages
 
 ## ✅ Everything is Working!
-
 **Your Kiyumba Technical School website now has:**
 - ✅ **Complete Exam Management System** - Teachers create, students view
+- ✅ **Department-Based Teacher System** - 11 specialized teaching departments
 - ✅ **Role-Based Staff Dashboards** - 5 specialized staff roles
 - ✅ **Admin User Management** - Manage all user roles
 - ✅ **Smart Login Flow** - Auto-redirect to correct dashboard

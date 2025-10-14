@@ -7,8 +7,7 @@ import Chat from '../components/Chat';
 import { Users, BookOpen, Award, Calendar, Settings, FileText, MessageSquare, Bell } from 'lucide-react';
 import { getPosts } from '../services/postsService';
 import { getAllMessages } from '../services/messagesService';
-import { getContactSubmissions } from '../services/contactService';
-import './StaffDashboard.css';
+import ProfilePictureUpload from '../components/ProfilePictureUpload';
 
 const StaffDashboard = () => {
   const { user } = useAuth();
@@ -56,21 +55,6 @@ const StaffDashboard = () => {
       <Navbar />
       
       <div className="dashboard-container">
-        {/* Header */}
-        <div className="dashboard-header">
-          <div className="welcome-section">
-            <img src={user.avatar} alt={user.name} className="user-avatar" />
-            <div>
-              <h1>Welcome, {user.name}</h1>
-              <p>Staff Dashboard</p>
-            </div>
-          </div>
-          <button className="btn btn-primary" onClick={() => navigate('/staff/settings')}>
-            <Settings size={18} />
-            Settings
-          </button>
-        </div>
-
         {/* Stats Grid */}
         <div className="stats-grid">
           {stats.map((stat) => (

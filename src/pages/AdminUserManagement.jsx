@@ -1,15 +1,22 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Users, Shield, UserCheck, Edit, Trash2, Search } from 'lucide-react';
+import { Users, Shield, UserCheck, Edit, Trash2, Search, Key, LogIn, Eye } from 'lucide-react';
 import './AdminUserManagement.css';
 
 const AdminUserManagement = () => {
+  const { impersonateUser, changeUserPassword, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordUserId, setPasswordUserId] = useState(null);
 
   useEffect(() => {
     loadUsers();
@@ -144,6 +151,81 @@ const AdminUserManagement = () => {
       setUsers(updatedUsers);
       localStorage.setItem('users', JSON.stringify(updatedUsers));
       alert('User deleted successfully');
+    }
+  };
+
+  // Handle user impersonation
+  const handleImpersonateUser = (targetUser) => {
+    if (!isAdmin) {
+      alert('Only administrators can impersonate users');
+      return;
+    }
+
+    const result = impersonateUser(targetUser);
+    if (result.success) {
+      // Navigate to the appropriate dashboard based on user role
+      switch (targetUser.role) {
+        case 'student':
+          navigate('/student/dashboard');
+          break;
+        case 'teacher':
+          if (targetUser.department) {
+            navigate('/teacher/dashboard');
+          } else {
+            navigate('/teacher/department-selection');
+          }
+          break;
+        case 'staff':
+          navigate('/staff/dashboard');
+          break;
+        case 'dod':
+          navigate('/dod/dashboard');
+          break;
+        case 'dos':
+          navigate('/dos/dashboard');
+          break;
+        case 'accountant':
+          navigate('/accountant/dashboard');
+          break;
+        case 'animateur':
+          navigate('/animateur/dashboard');
+          break;
+        case 'secretary':
+          navigate('/secretary/dashboard');
+          break;
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
+        default:
+          navigate('/');
+      }
+    } else {
+      alert(result.error);
+    }
+  };
+
+  // Handle password change
+  const handleChangePassword = (userId) => {
+    setPasswordUserId(userId);
+    setShowPasswordModal(true);
+    setNewPassword('');
+  };
+
+  // Handle password update
+  const handlePasswordChange = () => {
+    if (!newPassword.trim()) {
+      alert('Please enter a new password');
+      return;
+    }
+
+    const result = changeUserPassword(passwordUserId, newPassword);
+    if (result.success) {
+      alert('Password updated successfully');
+      setShowPasswordModal(false);
+      setNewPassword('');
+      setPasswordUserId(null);
+    } else {
+      alert(result.error);
     }
   };
 
@@ -369,6 +451,20 @@ const AdminUserManagement = () => {
                         <div className="action-buttons">
                           <button
                             className="btn-icon"
+                            onClick={() => handleImpersonateUser(user)}
+                            title="Access Dashboard"
+                          >
+                            <LogIn size={18} />
+                          </button>
+                          <button
+                            className="btn-icon"
+                            onClick={() => handleChangePassword(user.id)}
+                            title="Change Password"
+                          >
+                            <Key size={18} />
+                          </button>
+                          <button
+                            className="btn-icon"
                             onClick={() => setSelectedUser(user)}
                             title="Edit Role"
                           >
@@ -434,6 +530,52 @@ const AdminUserManagement = () => {
                       </button>
                     ))}
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Password Change Modal */}
+        {showPasswordModal && (
+          <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
+            <div className="modal-content card" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Change User Password</h2>
+                <button
+                  className="modal-close"
+                  onClick={() => setShowPasswordModal(false)}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="modal-body">
+                <div className="form-group">
+                  <label htmlFor="newPassword">New Password:</label>
+                  <input
+                    type="password"
+                    id="newPassword"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    className="form-input"
+                  />
+                </div>
+                <div className="modal-actions">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setShowPasswordModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={handlePasswordChange}
+                    disabled={!newPassword.trim()}
+                  >
+                    Update Password
+                  </button>
                 </div>
               </div>
             </div>

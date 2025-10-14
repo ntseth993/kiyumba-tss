@@ -15,13 +15,24 @@ import StaffSettings from './pages/StaffSettings';
 import StudentSettings from './pages/StudentSettings';
 import StaffDashboard from './pages/StaffDashboard';
 import TeacherDashboard from './pages/TeacherDashboard';
+import DepartmentSelection from './components/DepartmentSelection';
 import DODDashboard from './pages/DODDashboard';
 import DOSDashboard from './pages/DOSDashboard';
 import AccountantDashboard from './pages/AccountantDashboard';
 import AnimateurDashboard from './pages/AnimateurDashboard';
 import SecretaryDashboard from './pages/SecretaryDashboard';
+import AttendancePage from './pages/AttendancePage';
+import PaymentsPage from './pages/PaymentsPage';
+import ReportsPage from './pages/ReportsPage';
 import About from './pages/About';
 import Contact from './pages/Contact';
+
+// New School Management System Dashboards
+import TeacherManagementDashboard from './pages/TeacherManagementDashboard';
+import TimetableManagement from './pages/TimetableManagement';
+import ExamManagement from './pages/ExamManagement';
+import AssignmentManagement from './pages/AssignmentManagement';
+
 import './App.css';
 
 // Protected Route Component
@@ -158,6 +169,14 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/teacher/department-selection"
+          element={
+            <ProtectedRoute requiredRole="teacher">
+              <DepartmentSelection />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/teacher/dashboard"
           element={
             <ProtectedRoute requiredRole="teacher">
@@ -218,6 +237,66 @@ function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="student">
               <StudentSettings />
+            </ProtectedRoute>
+          }
+        />
+        
+        {/* New Feature Routes */}
+        <Route
+          path="/attendance"
+          element={
+            <ProtectedRoute allowedRoles={['teacher', 'dod', 'dos', 'admin', 'staff']}>
+              <AttendancePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payments"
+          element={
+            <ProtectedRoute allowedRoles={['accountant', 'dos', 'admin']}>
+              <PaymentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute allowedRoles={['teacher', 'dod', 'dos', 'admin', 'staff', 'secretary']}>
+              <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* School Management System Routes */}
+        <Route
+          path="/school/teachers"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'dos', 'dod', 'staff']}>
+              <TeacherManagementDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/school/timetable"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'dos', 'dod', 'teacher', 'staff']}>
+              <TimetableManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/school/exams"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'dos', 'dod', 'teacher', 'staff']}>
+              <ExamManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/school/assignments"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'dos', 'dod', 'teacher', 'staff', 'student']}>
+              <AssignmentManagement />
             </ProtectedRoute>
           }
         />
