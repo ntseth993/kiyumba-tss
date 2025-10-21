@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import StudentExamView from '../components/StudentExamView';
+import StudentAIChat from '../components/StudentAIChat';
 import {
   FileText,
   Calendar,
@@ -23,7 +24,9 @@ import {
   Users,
   Activity,
   Target,
-  Zap
+  Zap,
+  Bot,
+  Sparkles
 } from 'lucide-react';
 
 const StudentDashboard = () => {
@@ -113,6 +116,13 @@ const StudentDashboard = () => {
               <DollarSign size={20} />
               <span>Payments</span>
             </button>
+            <button
+              className={`nav-tab ${activeTab === 'ai-chat' ? 'active' : ''}`}
+              onClick={() => setActiveTab('ai-chat')}
+            >
+              <Sparkles size={20} />
+              <span>AI Assistant</span>
+            </button>
           </div>
 
           {/* Profile Section */}
@@ -136,6 +146,13 @@ const StudentDashboard = () => {
         {activeTab === 'reports' && <StudentReportView />}
         {activeTab === 'attendance' && <StudentAttendanceView />}
         {activeTab === 'payments' && <StudentPaymentView />}
+        
+        {/* AI Chat Tab */}
+        {activeTab === 'ai-chat' && (
+          <div className="dashboard-section full-width" style={{ minHeight: '700px' }}>
+            <StudentAIChat />
+          </div>
+        )}
 
         {activeTab === 'overview' && (
           <>
@@ -150,9 +167,9 @@ const StudentDashboard = () => {
                   <Target size={16} />
                   View Goals
                 </button>
-                <button className="action-btn secondary">
-                  <MessageSquare size={16} />
-                  Ask Question
+                <button className="action-btn secondary" onClick={() => setActiveTab('ai-chat')}>
+                  <Sparkles size={16} />
+                  Ask AI Assistant
                 </button>
               </div>
             </div>
