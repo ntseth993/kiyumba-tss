@@ -61,12 +61,37 @@ export const deleteAssessment = async (id) => {
   }
 };
 
-// Helper to convert file to Base64
+export const sendAssessmentToStudents = async (assessmentId, studentIds) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/assessments/${assessmentId}/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentIds })
+    });
+    if (!response.ok) throw new Error('Failed to send assessment to students');
+    return await response.json();
+  } catch (error) {
+    console.error('Error sending assessment to students:', error);
+    throw error;
+  }
+};
+
+export const getAssessmentsByTeacher = async (teacherId) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/assessments/teacher/${teacherId}`);
+    if (!response.ok) throw new Error('Failed to fetch teacher assessments');
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching teacher assessments:', error);
+    return [];
+  }
+};
+
 export const fileToBase64 = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
+    reader.onerror = error => reject(error);
   });
 };

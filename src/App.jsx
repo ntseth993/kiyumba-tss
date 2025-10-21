@@ -16,6 +16,7 @@ import StudentSettings from './pages/StudentSettings';
 import StaffDashboard from './pages/StaffDashboard';
 import TeacherDashboard from './pages/TeacherDashboard';
 import DepartmentSelection from './components/DepartmentSelection';
+import StudentClassSelection from './components/StudentClassSelection';
 import DODDashboard from './pages/DODDashboard';
 import DOSDashboard from './pages/DOSDashboard';
 import AccountantDashboard from './pages/AccountantDashboard';
@@ -72,6 +73,14 @@ function AppRoutes() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route
+          path="/student/class-selection"
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentClassSelection />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/student/dashboard"
           element={

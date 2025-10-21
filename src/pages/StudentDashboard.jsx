@@ -3,9 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import StudentExamView from '../components/StudentExamView';
-import StudentReportView from '../components/StudentReportView';
-import StudentAttendanceView from '../components/StudentAttendanceView';
-import StudentPaymentView from '../components/StudentPaymentView';
 import {
   FileText,
   Calendar,

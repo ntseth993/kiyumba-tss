@@ -5,10 +5,34 @@ const initializeStudents = () => {
   const existing = localStorage.getItem('students');
   if (!existing) {
     const sampleStudents = [
-      { id: 1, name: 'Alice Johnson', email: 'alice@school.com', grade: '10th', status: 'Active', createdAt: new Date().toISOString() },
-      { id: 2, name: 'Bob Smith', email: 'bob@school.com', grade: '9th', status: 'Active', createdAt: new Date().toISOString() },
-      { id: 3, name: 'Carol Williams', email: 'carol@school.com', grade: '11th', status: 'Active', createdAt: new Date().toISOString() },
-      { id: 4, name: 'David Brown', email: 'david@school.com', grade: '10th', status: 'Inactive', createdAt: new Date().toISOString() }
+      // SOD Department - L3
+      { id: 1, name: 'Alice Johnson', email: 'alice@school.com', class: 'L3', department: 'sod', status: 'Active', createdAt: new Date().toISOString() },
+      { id: 2, name: 'Bob Smith', email: 'bob@school.com', class: 'L3', department: 'sod', status: 'Active', createdAt: new Date().toISOString() },
+      { id: 3, name: 'Carol Williams', email: 'carol@school.com', class: 'L3', department: 'sod', status: 'Active', createdAt: new Date().toISOString() },
+      
+      // SOD Department - L4
+      { id: 4, name: 'David Brown', email: 'david@school.com', class: 'L4', department: 'sod', status: 'Active', createdAt: new Date().toISOString() },
+      { id: 5, name: 'Emma Davis', email: 'emma@school.com', class: 'L4', department: 'sod', status: 'Active', createdAt: new Date().toISOString() },
+      
+      // Fashion Department - L3
+      { id: 6, name: 'Frank Miller', email: 'frank@school.com', class: 'L3', department: 'fashion', status: 'Active', createdAt: new Date().toISOString() },
+      { id: 7, name: 'Grace Wilson', email: 'grace@school.com', class: 'L3', department: 'fashion', status: 'Active', createdAt: new Date().toISOString() },
+      
+      // BUC Department - L3
+      { id: 8, name: 'Henry Moore', email: 'henry@school.com', class: 'L3', department: 'buc', status: 'Active', createdAt: new Date().toISOString() },
+      { id: 9, name: 'Ivy Taylor', email: 'ivy@school.com', class: 'L3', department: 'buc', status: 'Active', createdAt: new Date().toISOString() },
+      
+      // Wood Technology - L3
+      { id: 10, name: 'Jack Anderson', email: 'jack@school.com', class: 'L3', department: 'wod', status: 'Active', createdAt: new Date().toISOString() },
+      { id: 11, name: 'Kate Thomas', email: 'kate@school.com', class: 'L3', department: 'wod', status: 'Active', createdAt: new Date().toISOString() },
+      
+      // SOD Department - L5
+      { id: 12, name: 'Liam Jackson', email: 'liam@school.com', class: 'L5', department: 'sod', status: 'Active', createdAt: new Date().toISOString() },
+      { id: 13, name: 'Mia White', email: 'mia@school.com', class: 'L5', department: 'sod', status: 'Active', createdAt: new Date().toISOString() },
+      
+      // Fashion Department - L4
+      { id: 14, name: 'Noah Harris', email: 'noah@school.com', class: 'L4', department: 'fashion', status: 'Active', createdAt: new Date().toISOString() },
+      { id: 15, name: 'Olivia Martin', email: 'olivia@school.com', class: 'L4', department: 'fashion', status: 'Active', createdAt: new Date().toISOString() }
     ];
     localStorage.setItem('students', JSON.stringify(sampleStudents));
   }
@@ -100,5 +124,20 @@ export const studentsService = {
       localStorage.setItem('students', JSON.stringify(filtered));
       return true;
     }
+  },
+
+  async getStudentsByClass(className) {
+    const students = await this.getStudents();
+    return students.filter(s => s.class === className && s.status === 'Active');
+  },
+
+  async getStudentsByDepartment(department) {
+    const students = await this.getStudents();
+    return students.filter(s => s.department === department && s.status === 'Active');
+  },
+
+  async getStudentsByClassAndDepartment(className, department) {
+    const students = await this.getStudents();
+    return students.filter(s => s.class === className && s.department === department && s.status === 'Active');
   }
 };

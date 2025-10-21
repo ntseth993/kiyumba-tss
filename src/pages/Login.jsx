@@ -43,7 +43,11 @@ const Login = () => {
           navigate('/teacher/dashboard');
         }
       } else if (result.user.role === 'student') {
-        navigate('/student/dashboard');
+        if (result.requiresClassSelection) {
+          navigate('/student/class-selection');
+        } else {
+          navigate('/student/dashboard');
+        }
       }
     } else {
       setError(result.error);

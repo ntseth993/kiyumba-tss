@@ -161,6 +161,15 @@
   color: #4F46E5;
 }
 
+.class-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #F0FDF4;
+  color: #10B981;
+}
+
 .urgent-badge {
   padding: 0.25rem 0.75rem;
   border-radius: 12px;

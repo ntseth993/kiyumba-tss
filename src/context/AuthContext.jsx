@@ -157,11 +157,14 @@ export const AuthProvider = ({ children }) => {
           name: 'Student User',
           email: 'student@kiyumba.com',
           role: 'student',
-          avatar: 'https://ui-avatars.com/api/?name=Student+User&background=EF4444&color=fff'
+          class: null,
+          department: null,
+          avatar: 'https://ui-avatars.com/api/?name=Student+User&background=EF4444&color=fff',
+          requiresClassSelection: true
         };
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-        return { success: true, user: userData };
+        return { success: true, user: userData, requiresClassSelection: true };
       }
 
       // Try to login with database/localStorage
@@ -198,6 +201,33 @@ export const AuthProvider = ({ children }) => {
       department: department.id,
       departmentInfo: department,
       requiresDepartmentSelection: false
+    };
+
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    return { success: true, user: updatedUser };
+  };
+
+  const selectStudentClassAndDepartment = (classLevel, departmentId) => {
+    if (!user || user.role !== 'student') {
+      return { success: false, error: 'Only students can select class and department' };
+    }
+
+    const department = getDepartmentById(departmentId);
+    if (!department) {
+      return { success: false, error: 'Invalid department selected' };
+    }
+
+    if (!['L3', 'L4', 'L5'].includes(classLevel)) {
+      return { success: false, error: 'Invalid class level selected' };
+    }
+
+    const updatedUser = {
+      ...user,
+      class: classLevel,
+      department: department.id,
+      departmentInfo: department,
+      requiresClassSelection: false
     };
 
     setUser(updatedUser);
@@ -306,6 +336,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     selectTeacherDepartment,
+    selectStudentClassAndDepartment,
     impersonateUser,
     stopImpersonation,
     changeUserPassword,
@@ -329,6 +360,11 @@ export const AuthProvider = ({ children }) => {
     requiresDepartmentSelection: user?.role === 'teacher' && user?.requiresDepartmentSelection,
     userDepartment: user?.departmentInfo || null,
     availableDepartments: Object.values(DEPARTMENTS),
+    // Student helpers
+    hasClassAndDepartment: user?.role === 'student' && user?.class && user?.department,
+    requiresClassSelection: user?.role === 'student' && user?.requiresClassSelection,
+    studentClass: user?.class || null,
+    studentDepartment: user?.department || null,
     // Impersonation helpers
     isImpersonated: user?.isImpersonated || false,
     originalAdmin: user?.originalAdmin || null

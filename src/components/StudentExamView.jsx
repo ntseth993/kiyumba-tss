@@ -19,20 +19,32 @@ const StudentExamView = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, upcoming, past
 
-  // Student class - in production this would come from user profile
-  const studentClass = user?.grade || user?.class || 'p6';
+  // Student class and department - from user profile
+  const studentClass = user?.class || 'L3';
+  const studentDepartment = user?.department || 'sod';
 
   useEffect(() => {
     loadExams();
-  }, [studentClass]);
+  }, [studentClass, studentDepartment]);
 
   const loadExams = async () => {
     try {
       setLoading(true);
-      const allExams = await getExamsForStudent(studentClass);
-      const upcoming = await getUpcomingExams(studentClass);
+      // Fetch assessments from localStorage (from TeacherDashboard)
+      const storedAssessments = localStorage.getItem('assessments');
+      const allAssessments = storedAssessments ? JSON.parse(storedAssessments) : [];
       
-      setExams(allExams);
+      // Filter assessments by student's class and department
+      const studentAssessments = allAssessments.filter(assessment => 
+        assessment.class === studentClass
+      );
+      
+      const now = new Date();
+      const upcoming = studentAssessments.filter(assessment => 
+        new Date(assessment.dueDate) > now
+      );
+      
+      setExams(studentAssessments);
       setUpcomingExams(upcoming);
     } catch (error) {
       console.error('Error loading exams:', error);
@@ -73,13 +85,22 @@ const StudentExamView = () => {
   };
 
   const filteredExams = exams.filter(exam => {
-    if (filter === 'upcoming') return isUpcoming(exam.examDate);
-    if (filter === 'past') return isPast(exam.examDate);
+    const examDate = exam.dueDate || exam.examDate;
+    if (filter === 'upcoming') return isUpcoming(examDate);
+    if (filter === 'past') return isPast(examDate);
     return true;
   });
 
   const handleDownload = (exam) => {
-    if (exam.fileUrl) {
+    if (exam.file) {
+      // Download from base64 data
+      const link = document.createElement('a');
+      link.href = exam.file;
+      link.download = exam.fileName || `${exam.title}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (exam.fileUrl) {
       // In production, this would download from cloud storage
       window.open(exam.fileUrl, '_blank');
     }
@@ -157,8 +178,9 @@ const StudentExamView = () => {
           </div>
         ) : (
           filteredExams.map(exam => {
-            const daysUntil = getDaysUntil(exam.examDate);
-            const isExamUpcoming = isUpcoming(exam.examDate);
+            const examDate = exam.dueDate || exam.examDate;
+            const daysUntil = getDaysUntil(examDate);
+            const isExamUpcoming = isUpcoming(examDate);
             
             return (
               <div 
@@ -169,13 +191,14 @@ const StudentExamView = () => {
                   <div className="exam-title-section">
                     <h3>{exam.title}</h3>
                     <div className="exam-badges">
-                      <span className="subject-badge">{exam.subject}</span>
+                      <span className="subject-badge">{exam.type || exam.subject}</span>
+                      <span className="class-badge">{exam.class}</span>
                       {isExamUpcoming && daysUntil <= 7 && (
                         <span className="urgent-badge">
                           {daysUntil === 0 ? 'Today' : `In ${daysUntil} day${daysUntil > 1 ? 's' : ''}`}
                         </span>
                       )}
-                      {isPast(exam.examDate) && (
+                      {isPast(examDate) && (
                         <span className="completed-badge">
                           <CheckCircle size={14} />
                           Completed
@@ -193,28 +216,20 @@ const StudentExamView = () => {
                   <div className="detail-item">
                     <Calendar size={16} />
                     <div>
-                      <span className="detail-label">Exam Date</span>
-                      <span className="detail-value">{formatDate(exam.examDate)}</span>
+                      <span className="detail-label">Due Date</span>
+                      <span className="detail-value">{formatDate(examDate)}</span>
                     </div>
                   </div>
 
-                  {exam.dueDate && (
+                  {exam.totalMarks && (
                     <div className="detail-item">
-                      <Clock size={16} />
+                      <Award size={16} />
                       <div>
-                        <span className="detail-label">Due Date</span>
-                        <span className="detail-value">{formatDate(exam.dueDate)}</span>
+                        <span className="detail-label">Total Marks</span>
+                        <span className="detail-value">{exam.totalMarks}</span>
                       </div>
                     </div>
                   )}
-
-                  <div className="detail-item">
-                    <Award size={16} />
-                    <div>
-                      <span className="detail-label">Total Marks</span>
-                      <span className="detail-value">{exam.totalMarks}</span>
-                    </div>
-                  </div>
 
                   {exam.duration && (
                     <div className="detail-item">
@@ -225,20 +240,28 @@ const StudentExamView = () => {
                       </div>
                     </div>
                   )}
+
+                  <div className="detail-item">
+                    <FileText size={16} />
+                    <div>
+                      <span className="detail-label">Status</span>
+                      <span className="detail-value">{exam.status || 'Active'}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="exam-footer">
                   <div className="teacher-info">
-                    <span>By {exam.teacherName}</span>
+                    <span>Created: {formatDate(exam.createdAt || new Date())}</span>
                   </div>
                   
-                  {exam.fileName && (
+                  {(exam.fileName || exam.file) && (
                     <button
                       className="btn btn-primary btn-sm"
                       onClick={() => handleDownload(exam)}
                     >
                       <Download size={16} />
-                      Download Exam
+                      Download {exam.type || 'Exam'}
                     </button>
                   )}
                 </div>

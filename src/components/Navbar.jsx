@@ -58,7 +58,11 @@ const Navbar = () => {
     if (user?.role === 'admin') {
       navigate('/admin/dashboard');
     } else if (user?.role === 'student') {
-      navigate('/student/dashboard');
+      if (user?.requiresClassSelection) {
+        navigate('/student/class-selection');
+      } else {
+        navigate('/student/dashboard');
+      }
     } else if (user?.role === 'teacher') {
       if (user?.requiresDepartmentSelection) {
         navigate('/teacher/department-selection');
