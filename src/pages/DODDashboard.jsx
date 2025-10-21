@@ -62,6 +62,8 @@ const DODDashboard = () => {
   const [conductMarks, setConductMarks] = useState({ term1: 0, term2: 0, term3: 0 });
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [selectedStudentForPermission, setSelectedStudentForPermission] = useState(null);
+  const [showEditPermissionModal, setShowEditPermissionModal] = useState(false);
+  const [editingPermission, setEditingPermission] = useState(null);
   const [newStudentForm, setNewStudentForm] = useState({
     name: '',
     email: '',
@@ -266,6 +268,33 @@ const DODDashboard = () => {
     setShowPermissionModal(false);
     setSelectedStudentForPermission(null);
     alert('Permission created successfully!');
+  };
+
+  const handleEditPermission = (permission) => {
+    setEditingPermission(permission);
+    setShowEditPermissionModal(true);
+  };
+
+  const handleUpdatePermission = (updatedData) => {
+    setPermissions(prev => prev.map(p => 
+      p.id === editingPermission.id 
+        ? { ...p, ...updatedData, lastModified: new Date().toISOString() }
+        : p
+    ));
+    setShowEditPermissionModal(false);
+    setEditingPermission(null);
+    alert('Permission updated successfully!');
+  };
+
+  const handleRevokePermission = (permission) => {
+    if (window.confirm(`Are you sure you want to revoke this permission for ${permission.studentName}?\n\nThis will change the status to "Expired" and the permission will no longer be valid.`)) {
+      setPermissions(prev => prev.map(p => 
+        p.id === permission.id 
+          ? { ...p, status: 'Expired', revokedDate: new Date().toISOString(), revokedBy: 'Director of Discipline' }
+          : p
+      ));
+      alert('Permission revoked successfully!');
+    }
   };
 
   const handlePrintPermission = (permission) => {
@@ -750,6 +779,7 @@ const DODDashboard = () => {
                                 </button>
                                 <button
                                   className="btn btn-sm btn-outline"
+                                  onClick={() => handleEditPermission(permission)}
                                   title="Edit Permission"
                                   style={{ color: '#4F46E5' }}
                                 >
@@ -757,8 +787,10 @@ const DODDashboard = () => {
                                 </button>
                                 <button
                                   className="btn btn-sm btn-outline"
+                                  onClick={() => handleRevokePermission(permission)}
                                   title="Revoke Permission"
                                   style={{ color: '#EF4444' }}
+                                  disabled={permission.status === 'Expired'}
                                 >
                                   <Ban size={14} />
                                 </button>
@@ -1147,6 +1179,143 @@ const DODDashboard = () => {
                     <button type="submit" className="btn btn-primary">
                       <FileCheck size={16} />
                       Create Permission
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Permission Modal */}
+        {showEditPermissionModal && editingPermission && (
+          <div className="modal-overlay" onClick={() => setShowEditPermissionModal(false)}>
+            <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Edit Permission</h2>
+                <button className="close-btn" onClick={() => setShowEditPermissionModal(false)}>
+                  <X size={24} />
+                </button>
+              </div>
+              <div className="modal-body">
+                <div style={{ marginBottom: '2rem', background: '#f0f9ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
+                  <h3 style={{ color: '#1e40af', marginBottom: '0.5rem', fontSize: '1rem' }}>Student Information:</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', fontSize: '0.9rem' }}>
+                    <div><strong>Name:</strong> {editingPermission.studentName}</div>
+                    <div><strong>Class:</strong> {editingPermission.studentClass}</div>
+                    <div><strong>Department:</strong> {editingPermission.studentDepartment}</div>
+                    <div><strong>Current Status:</strong> <span className={`status-badge ${editingPermission.status.toLowerCase()}`}>{editingPermission.status}</span></div>
+                  </div>
+                </div>
+
+                <form onSubmit={(e) => { 
+                  e.preventDefault(); 
+                  handleUpdatePermission({
+                    type: e.target.permissionType.value,
+                    purpose: e.target.purpose.value,
+                    expiryDate: e.target.expiryDate.value,
+                    conditions: e.target.conditions.value,
+                    status: e.target.status.value
+                  }); 
+                }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                        Permission Type *
+                      </label>
+                      <select 
+                        name="permissionType" 
+                        required 
+                        defaultValue={editingPermission.type}
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                      >
+                        <option value="Disciplinary Clearance">Disciplinary Clearance</option>
+                        <option value="Good Conduct Certificate">Good Conduct Certificate</option>
+                        <option value="Activity Permission">Activity Permission</option>
+                        <option value="Exit Permit">Exit Permit</option>
+                        <option value="Transfer Certificate">Transfer Certificate</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                        Status *
+                      </label>
+                      <select 
+                        name="status" 
+                        required 
+                        defaultValue={editingPermission.status}
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Expired">Expired</option>
+                        <option value="Pending">Pending</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                        Issue Date
+                      </label>
+                      <input
+                        type="text"
+                        value={new Date(editingPermission.issueDate).toLocaleDateString()}
+                        disabled
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb', background: '#f3f4f6' }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                        Expiry Date *
+                      </label>
+                      <input
+                        type="date"
+                        name="expiryDate"
+                        required
+                        defaultValue={editingPermission.expiryDate}
+                        min={new Date().toISOString().split('T')[0]}
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                      Purpose/Reason *
+                    </label>
+                    <input
+                      type="text"
+                      name="purpose"
+                      required
+                      defaultValue={editingPermission.purpose}
+                      placeholder="e.g., School Trip, University Application, Sports Competition"
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '2rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
+                      Special Conditions/Notes
+                    </label>
+                    <textarea
+                      name="conditions"
+                      rows="3"
+                      defaultValue={editingPermission.conditions}
+                      placeholder="Any special conditions or notes for this permission..."
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb', resize: 'vertical' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                    <button type="button" className="btn btn-outline" onClick={() => setShowEditPermissionModal(false)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary">
+                      <Edit size={16} />
+                      Update Permission
                     </button>
                   </div>
                 </form>

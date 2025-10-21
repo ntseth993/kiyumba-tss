@@ -19,7 +19,7 @@ const StudentPaymentView = () => {
   const loadPaymentData = async () => {
     try {
       // Get student's payment history
-      const history = paymentService.getStudentPayments(user.studentId || user.email);
+      const history = await paymentService.getStudentPayments(user.studentId || user.email);
       
       // Calculate totals
       const paid = history.reduce((sum, payment) => sum + payment.amount, 0);

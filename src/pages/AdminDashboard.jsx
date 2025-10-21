@@ -7,6 +7,7 @@ import Footer from '../components/Footer';
 import Chat from '../components/Chat';
 import ProfilePictureUpload from '../components/ProfilePictureUpload';
 import SchoolManagementNav from '../components/SchoolManagementNav';
+import DashboardFeed from '../components/DashboardFeed';
 import { studentsService } from '../services/studentsService';
 import { statsService } from '../services/statsService';
 import { activityLogsService } from '../services/activityLogsService';
@@ -754,6 +755,9 @@ const AdminDashboard = () => {
             )}
           </div>
         </div>
+
+        {/* Posts and Announcements Feed */}
+        <DashboardFeed />
 
         {/* Content & System Management Grid */}
         <div className="admin-grid-modern">

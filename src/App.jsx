@@ -10,6 +10,9 @@ import AdminApplications from './pages/AdminApplications';
 import AdminUserManagement from './pages/AdminUserManagement';
 import AdminContent from './pages/AdminContent';
 import AdminSettings from './pages/AdminSettings';
+import AdminPosts from './pages/AdminPosts';
+import AdminAnnouncements from './pages/AdminAnnouncements';
+import AdminMediaLibrary from './pages/AdminMediaLibrary';
 import TeacherSettings from './pages/TeacherSettings';
 import StaffSettings from './pages/StaffSettings';
 import StudentSettings from './pages/StudentSettings';
@@ -126,6 +129,30 @@ function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="admin">
               <AdminSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/posts"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminPosts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/announcements"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminAnnouncements />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/media"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminMediaLibrary />
             </ProtectedRoute>
           }
         />

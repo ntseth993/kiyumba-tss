@@ -14,6 +14,7 @@ import {
   ChevronDown, 
   ChevronUp,
   ClipboardList,
+  ClipboardCheck,
   GraduationCap,
   Calculator,
   X,
@@ -38,6 +39,7 @@ import DOSStudentReports from '../components/DOSStudentReports';
 import Navbar from '../components/Navbar';
 import Chat from '../components/Chat';
 import Footer from '../components/Footer';
+import DashboardFeed from '../components/DashboardFeed';
 import { marksService } from '../services/marksService';
 import { studentsService } from '../services/studentsService';
 import { getDepartmentSubjects } from '../services/departmentSubjectsService';
@@ -62,12 +64,14 @@ const DOSDashboard = () => {
   const [showMarksModal, setShowMarksModal] = useState(false);
   const [selectedStudentMarks, setSelectedStudentMarks] = useState(null);
   const [selectedDepartmentFilter, setSelectedDepartmentFilter] = useState('All');
+  const [selectedDepartment, setSelectedDepartment] = useState('All');
   const [expandedSections, setExpandedSections] = useState({ 
-    students: false,
+    students: true,
     subjectReports: false,
     departmentReports: false,
     individualReports: false,
-    teacherMarks: false
+    teacherMarks: false,
+    discipline: false
   });
   const [academicStats, setAcademicStats] = useState({
     totalStudents: 1524,
@@ -85,6 +89,17 @@ const DOSDashboard = () => {
   const [selectedClassForReports, setSelectedClassForReports] = useState('All');
   const [selectedSubjectForReports, setSelectedSubjectForReports] = useState('All');
   const [showMarksReportModal, setShowMarksReportModal] = useState(false);
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
+  const [showEditStudentModal, setShowEditStudentModal] = useState(false);
+  const [currentStudent, setCurrentStudent] = useState(null);
+  const [newStudent, setNewStudent] = useState({
+    name: '',
+    email: '',
+    class: 'L3',
+    department: 'sod',
+    status: 'Active',
+    password: ''
+  });
   const [selectedMarksData, setSelectedMarksData] = useState(null);
 
   useEffect(() => {
@@ -175,7 +190,7 @@ const DOSDashboard = () => {
 
   useEffect(() => {
     applyFilters();
-  }, [students, selectedClass, selectedDepartmentFilter]);
+  }, [students, selectedClass, selectedDepartmentFilter, selectedDepartment]);
 
   useEffect(() => {
     if (marksSelectedDepartment && marksSelectedDepartment !== 'all') {
@@ -291,6 +306,162 @@ const DOSDashboard = () => {
     setShowMarksReportModal(true);
   };
 
+  const handleAddStudent = () => {
+    setShowAddStudentModal(true);
+  };
+
+  const handleEditStudent = (student) => {
+    setCurrentStudent(student);
+    setNewStudent({
+      name: student.name,
+      email: student.email,
+      class: student.class,
+      department: student.department,
+      status: student.status || 'Active'
+    });
+    setShowEditStudentModal(true);
+  };
+
+  const handleDeleteStudent = async (studentId) => {
+    if (window.confirm('Are you sure you want to delete this student? This will also delete their user account and they will no longer be able to log in.')) {
+      try {
+        // Find the student to get their email
+        const student = students.find(s => s.id === studentId);
+        
+        // Delete student record
+        await studentsService.deleteStudent(studentId);
+        
+        // Delete user account
+        if (student) {
+          const users = JSON.parse(localStorage.getItem('users') || '[]');
+          const filteredUsers = users.filter(u => u.email !== student.email && u.studentId !== student.studentId);
+          localStorage.setItem('users', JSON.stringify(filteredUsers));
+        }
+        
+        const updatedStudents = await studentsService.getStudents();
+        setStudents(updatedStudents);
+        setAcademicStats(prev => ({ ...prev, totalStudents: updatedStudents.length }));
+        alert('Student and associated user account deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting student:', error);
+        alert('Failed to delete student');
+      }
+    }
+  };
+
+  const handleSaveStudent = async () => {
+    try {
+      if (!newStudent.name.trim() || !newStudent.email.trim()) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      // Use custom password if provided, otherwise use default
+      const defaultPassword = 'student123';
+      const password = newStudent.password.trim() || defaultPassword;
+      const studentId = `STU${Date.now()}`;
+
+      // Create student record
+      const studentData = {
+        ...newStudent,
+        studentId: studentId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        attendance: '0',
+        gpa: '0.00'
+      };
+
+      const savedStudent = await studentsService.createStudent(studentData);
+
+      // Create user account for the student
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      
+      // Check if user already exists
+      const existingUser = users.find(u => u.email === newStudent.email);
+      
+      if (!existingUser) {
+        const newUser = {
+          id: Date.now(),
+          name: newStudent.name,
+          email: newStudent.email,
+          password: password,
+          role: 'student',
+          class: newStudent.class,
+          department: newStudent.department,
+          status: newStudent.status,
+          studentId: studentId,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(newStudent.name)}&background=EF4444&color=fff`,
+          requiresClassSelection: false,
+          createdAt: new Date().toISOString()
+        };
+
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+      }
+
+      const updatedStudents = await studentsService.getStudents();
+      setStudents(updatedStudents);
+      setAcademicStats(prev => ({ ...prev, totalStudents: updatedStudents.length }));
+
+      setShowAddStudentModal(false);
+      setNewStudent({ name: '', email: '', class: 'L3', department: 'sod', status: 'Active', password: '' });
+      
+      alert(`Student added successfully!\n\nLogin Credentials:\nEmail: ${newStudent.email}\nPassword: ${password}\n\nPlease share these credentials with the student.`);
+    } catch (error) {
+      console.error('Error saving student:', error);
+      alert('Failed to add student: ' + error.message);
+    }
+  };
+
+  const handleUpdateStudent = async () => {
+    try {
+      if (!newStudent.name.trim() || !newStudent.email.trim()) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      const updatedStudentData = {
+        ...newStudent,
+        updatedAt: new Date().toISOString()
+      };
+
+      await studentsService.updateStudent(currentStudent.id, updatedStudentData);
+      
+      // Update user account if it exists
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const userIndex = users.findIndex(u => u.email === currentStudent.email || u.studentId === currentStudent.studentId);
+      
+      if (userIndex !== -1) {
+        users[userIndex] = {
+          ...users[userIndex],
+          name: newStudent.name,
+          email: newStudent.email,
+          class: newStudent.class,
+          department: newStudent.department,
+          status: newStudent.status,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(newStudent.name)}&background=EF4444&color=fff`,
+          updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem('users', JSON.stringify(users));
+      }
+
+      const updatedStudents = await studentsService.getStudents();
+      setStudents(updatedStudents);
+
+      setShowEditStudentModal(false);
+      setCurrentStudent(null);
+      setNewStudent({ name: '', email: '', class: 'L3', department: 'sod', status: 'Active', password: '' });
+      alert('Student updated successfully!');
+    } catch (error) {
+      console.error('Error updating student:', error);
+      alert('Failed to update student');
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setNewStudent(prev => ({ ...prev, [field]: value }));
+  };
+
   const stats = [
     { 
       id: 1, 
@@ -329,7 +500,6 @@ const DOSDashboard = () => {
   return (
     <div className="staff-dashboard">
       <Navbar />
-      
       <div className="dashboard-container">
         <div className="stats-grid">
           {stats.map((stat) => (
@@ -349,6 +519,9 @@ const DOSDashboard = () => {
             </div>
           ))}
         </div>
+
+        {/* Posts and Announcements Feed */}
+        <DashboardFeed />
 
         <div className="staff-grid">
           <div className="staff-section">
@@ -735,7 +908,28 @@ const DOSDashboard = () => {
             
             {expandedSections.students && (
               <div className="section-content">
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={handleAddStudent}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px', 
+                      backgroundColor: '#4F46E5',
+                      color: 'white',
+                      padding: '0.75rem 1.5rem',
+                      borderRadius: '8px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      fontSize: '0.875rem'
+                    }}
+                  >
+                    <Plus size={18} />
+                    <span>Add New Student</span>
+                  </button>
+
                   <select 
                     value={selectedClass} 
                     onChange={(e) => setSelectedClass(e.target.value)}
@@ -775,12 +969,13 @@ const DOSDashboard = () => {
                         <th>Attendance</th>
                         <th>GPA</th>
                         <th>Status</th>
+                        <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredStudents.length === 0 ? (
                         <tr>
-                          <td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}>
+                          <td colSpan="8" style={{ textAlign: 'center', padding: '2rem' }}>
                             No students found
                           </td>
                         </tr>
@@ -798,6 +993,32 @@ const DOSDashboard = () => {
                                 {student.status}
                               </span>
                             </td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button 
+                                  className="btn btn-sm btn-outline" 
+                                  onClick={() => handleEditStudent(student)}
+                                  title="Edit student"
+                                >
+                                  <Edit size={14} />
+                                </button>
+                                <button 
+                                  className="btn btn-sm btn-outline" 
+                                  onClick={() => handleDeleteStudent(student.id)}
+                                  title="Delete student"
+                                  style={{ color: '#ef4444', borderColor: '#ef4444' }}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                                <button 
+                                  className="btn btn-sm btn-outline" 
+                                  onClick={() => handleViewStudentMarks(student.id)}
+                                  title="View marks"
+                                >
+                                  <Eye size={14} />
+                                </button>
+                              </div>
+                            </td>
                           </tr>
                         ))
                       )}
@@ -808,7 +1029,166 @@ const DOSDashboard = () => {
             )}
           </div>
 
-          {/* Student Marks Viewing Section */}
+          {/* Discipline Management Section */}
+          <div className="staff-section" style={{ gridColumn: '1 / -1' }}>
+            <div className="section-header" style={{ cursor: 'pointer' }}>
+              <div className="section-title" onClick={() => toggleSection('discipline')}>
+                <AlertTriangle size={24} />
+                <h2>Discipline Management</h2>
+              </div>
+              <button className="toggle-btn" onClick={() => toggleSection('discipline')}>
+                {expandedSections.discipline ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </button>
+            </div>
+
+            {expandedSections.discipline && (
+              <div className="section-content">
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <select 
+                    value={selectedClass} 
+                    onChange={(e) => setSelectedClass(e.target.value)}
+                    style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  >
+                    <option value="All">All Classes</option>
+                    <option value="L3">L3</option>
+                    <option value="L4">L4</option>
+                    <option value="L5">L5</option>
+                  </select>
+
+                  <select 
+                    value={selectedDepartment} 
+                    onChange={(e) => setSelectedDepartment(e.target.value)}
+                    style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  >
+                    <option value="All">All Departments</option>
+                    <option value="SOD">SOD</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="BUC">BUC</option>
+                    <option value="Wood Technology">Wood Technology</option>
+                  </select>
+
+                  <button 
+                    className="btn btn-primary"
+                    onClick={() => alert('Add new discipline record functionality coming soon!')}
+                  >
+                    <Plus size={18} />
+                    Add Discipline Record
+                  </button>
+
+                  <div style={{ marginLeft: 'auto', fontWeight: '600', color: '#667eea' }}>
+                    Discipline management system
+                  </div>
+                </div>
+
+                <div className="discipline-grid">
+                  <div className="discipline-card card">
+                    <div className="discipline-header">
+                      <AlertTriangle size={20} />
+                      <span>Active Cases</span>
+                    </div>
+                    <div className="discipline-content">
+                      <div className="discipline-stat">
+                        <span className="discipline-number">12</span>
+                        <span className="discipline-label">Pending</span>
+                      </div>
+                      <div className="discipline-stat">
+                        <span className="discipline-number">8</span>
+                        <span className="discipline-label">Resolved</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="discipline-card card">
+                    <div className="discipline-header">
+                      <Ban size={20} />
+                      <span>Suspensions</span>
+                    </div>
+                    <div className="discipline-content">
+                      <div className="discipline-stat">
+                        <span className="discipline-number">3</span>
+                        <span className="discipline-label">Current</span>
+                      </div>
+                      <div className="discipline-stat">
+                        <span className="discipline-number">15</span>
+                        <span className="discipline-label">This Term</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="discipline-card card">
+                    <div className="discipline-header">
+                      <Clock size={20} />
+                      <span>Warnings</span>
+                    </div>
+                    <div className="discipline-content">
+                      <div className="discipline-stat">
+                        <span className="discipline-number">28</span>
+                        <span className="discipline-label">This Month</span>
+                      </div>
+                      <div className="discipline-stat">
+                        <span className="discipline-number">156</span>
+                        <span className="discipline-label">This Term</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="table-container" style={{ marginTop: '2rem' }}>
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Student Name</th>
+                        <th>Class</th>
+                        <th>Department</th>
+                        <th>Incident Type</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Severity</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>John Doe</td>
+                        <td>L4</td>
+                        <td>SOD</td>
+                        <td>Late Submission</td>
+                        <td>2024-01-15</td>
+                        <td><span className="status-badge active">Active</span></td>
+                        <td><span className="status-badge warning">Medium</span></td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button className="btn btn-sm btn-outline">
+                              <Eye size={14} />
+                            </button>
+                            <button className="btn btn-sm btn-outline">
+                              <Edit size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Jane Smith</td>
+                        <td>L3</td>
+                        <td>Fashion</td>
+                        <td>Attendance Issue</td>
+                        <td>2024-01-14</td>
+                        <td><span className="status-badge inactive">Resolved</span></td>
+                        <td><span className="status-badge active">Low</span></td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button className="btn btn-sm btn-outline">
+                              <Eye size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
           <div className="staff-section" style={{ gridColumn: '1 / -1' }}>
             <div className="section-header">
               <div className="section-title">
@@ -1290,6 +1670,174 @@ const DOSDashboard = () => {
         </div>
       )}
 
+      {/* Add Student Modal */}
+      {showAddStudentModal && (
+        <div className="modal-overlay" onClick={() => setShowAddStudentModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h2>Add New Student</h2>
+              <button className="close-btn" onClick={() => setShowAddStudentModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div style={{ display: 'grid', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Name *</label>
+                  <input
+                    type="text"
+                    value={newStudent.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="Enter student name"
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Email *</label>
+                  <input
+                    type="email"
+                    value={newStudent.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="Enter student email"
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Password (optional)</label>
+                  <input
+                    type="text"
+                    value={newStudent.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    placeholder="Leave blank for default: student123"
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  />
+                  <small style={{ color: '#6b7280', fontSize: '0.875rem' }}>If not provided, default password 'student123' will be used</small>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Class</label>
+                  <select
+                    value={newStudent.class}
+                    onChange={(e) => handleInputChange('class', e.target.value)}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  >
+                    <option value="L3">L3</option>
+                    <option value="L4">L4</option>
+                    <option value="L5">L5</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Department</label>
+                  <select
+                    value={newStudent.department}
+                    onChange={(e) => handleInputChange('department', e.target.value)}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  >
+                    <option value="sod">SOD</option>
+                    <option value="fashion">Fashion</option>
+                    <option value="buc">BUC</option>
+                    <option value="wod">Wood Technology</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Status</label>
+                  <select
+                    value={newStudent.status}
+                    onChange={(e) => handleInputChange('status', e.target.value)}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Suspended">Suspended</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={() => setShowAddStudentModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleSaveStudent}>Add Student</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Student Modal */}
+      {showEditStudentModal && (
+        <div className="modal-overlay" onClick={() => setShowEditStudentModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h2>Edit Student</h2>
+              <button className="close-btn" onClick={() => setShowEditStudentModal(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div style={{ display: 'grid', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Name *</label>
+                  <input
+                    type="text"
+                    value={newStudent.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="Enter student name"
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Email *</label>
+                  <input
+                    type="email"
+                    value={newStudent.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="Enter student email"
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Class</label>
+                  <select
+                    value={newStudent.class}
+                    onChange={(e) => handleInputChange('class', e.target.value)}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  >
+                    <option value="L3">L3</option>
+                    <option value="L4">L4</option>
+                    <option value="L5">L5</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Department</label>
+                  <select
+                    value={newStudent.department}
+                    onChange={(e) => handleInputChange('department', e.target.value)}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  >
+                    <option value="sod">SOD</option>
+                    <option value="fashion">Fashion</option>
+                    <option value="buc">BUC</option>
+                    <option value="wod">Wood Technology</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Status</label>
+                  <select
+                    value={newStudent.status}
+                    onChange={(e) => handleInputChange('status', e.target.value)}
+                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Suspended">Suspended</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={() => setShowEditStudentModal(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleUpdateStudent}>Update Student</button>
+            </div>
+          </div>
+        </div>
+      )}
       <Chat />
       <Footer />
     </div>

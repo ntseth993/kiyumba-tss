@@ -96,6 +96,11 @@ export const paymentService = {
     }
   },
 
+  // Get student payments (alias for getStudentTransactions for consistency)
+  async getStudentPayments(studentId) {
+    return this.getStudentTransactions(studentId);
+  },
+
   // Get transactions for a student
   async getStudentTransactions(studentId) {
     try {

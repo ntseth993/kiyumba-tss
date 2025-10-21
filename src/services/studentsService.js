@@ -45,15 +45,32 @@ export const studentsService = {
       // Initialize sample data if not exists
       initializeStudents();
 
+      // Try to fetch from API first
       const response = await fetch(`${API_BASE}/students`);
-      if (!response.ok) throw new Error('Failed to fetch students');
-      return await response.json();
+      if (response.ok) {
+        const data = await response.json();
+        // Update localStorage with API data
+        localStorage.setItem('students', JSON.stringify(data));
+        return data;
+      } else {
+        throw new Error(`API returned ${response.status}`);
+      }
     } catch (error) {
-      console.error('Error fetching students:', error);
+      console.error('Error fetching students from API:', error.message);
+      console.log('Falling back to localStorage');
+
       // Fallback to localStorage
       initializeStudents();
       const stored = localStorage.getItem('students');
-      return stored ? JSON.parse(stored) : [];
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (parseError) {
+          console.error('Error parsing localStorage data:', parseError);
+          return [];
+        }
+      }
+      return [];
     }
   },
 

@@ -144,6 +144,11 @@ p {
   color: white;
 }
 
+.btn-large {
+  padding: 16px 32px;
+  font-size: 16px;
+}
+
 .card {
   background-color: var(--bg-white);
   border-radius: 12px;

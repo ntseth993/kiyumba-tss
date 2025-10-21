@@ -4,8 +4,8 @@
 const AI_CONFIGS = {
   gemini: {
     apiKey: import.meta.env.VITE_GEMINI_API_KEY || '',
-    endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
-    model: 'gemini-pro'
+    endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+    model: 'gemini-2.5-flash'
   },
   chatgpt: {
     apiKey: import.meta.env.VITE_OPENAI_API_KEY || '',
@@ -22,7 +22,7 @@ const AI_CONFIGS = {
 /**
  * Call Google Gemini API
  */
-async function callGeminiAPI(message, conversationHistory = []) {
+async function callGeminiAPI(message, conversationHistory = [], files = []) {
   const config = AI_CONFIGS.gemini;
   
   if (!config.apiKey) {
@@ -30,7 +30,19 @@ async function callGeminiAPI(message, conversationHistory = []) {
   }
 
   try {
-    const response = await fetch(`${config.endpoint}?key=${config.apiKey}`, {
+    // Prepare message with file information
+    let enhancedMessage = message;
+    if (files.length > 0) {
+      enhancedMessage += '\n\nFiles uploaded:';
+      files.forEach(file => {
+        enhancedMessage += `\n- ${file.name} (${file.type}, ${Math.round(file.size / 1024)}KB)`;
+      });
+    }
+
+    // Use the correct endpoint format with available model
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.apiKey}`;
+    
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -38,13 +50,15 @@ async function callGeminiAPI(message, conversationHistory = []) {
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: message
+            text: enhancedMessage
           }]
         }]
       })
     });
 
     if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Gemini API error:', errorData);
       throw new Error(`Gemini API error: ${response.status}`);
     }
 
@@ -59,7 +73,7 @@ async function callGeminiAPI(message, conversationHistory = []) {
 /**
  * Call ChatGPT API
  */
-async function callChatGPTAPI(message, conversationHistory = []) {
+async function callChatGPTAPI(message, conversationHistory = [], files = []) {
   const config = AI_CONFIGS.chatgpt;
   
   if (!config.apiKey) {
@@ -67,15 +81,24 @@ async function callChatGPTAPI(message, conversationHistory = []) {
   }
 
   try {
+    // Prepare message with file information
+    let enhancedMessage = message;
+    if (files.length > 0) {
+      enhancedMessage += '\n\nFiles uploaded:';
+      files.forEach(file => {
+        enhancedMessage += `\n- ${file.name} (${file.type}, ${Math.round(file.size / 1024)}KB)`;
+      });
+    }
+
     const messages = [
       {
         role: 'system',
-        content: 'You are a helpful AI study assistant for students. Provide clear, educational responses.'
+        content: 'You are a helpful AI study assistant for students. Provide clear, educational responses. If files are uploaded, acknowledge them and incorporate their content if relevant.'
       },
       ...conversationHistory,
       {
         role: 'user',
-        content: message
+        content: enhancedMessage
       }
     ];
 
@@ -108,7 +131,7 @@ async function callChatGPTAPI(message, conversationHistory = []) {
 /**
  * Call Claude API
  */
-async function callClaudeAPI(message, conversationHistory = []) {
+async function callClaudeAPI(message, conversationHistory = [], files = []) {
   const config = AI_CONFIGS.claude;
   
   if (!config.apiKey) {
@@ -116,6 +139,15 @@ async function callClaudeAPI(message, conversationHistory = []) {
   }
 
   try {
+    // Prepare message with file information
+    let enhancedMessage = message;
+    if (files.length > 0) {
+      enhancedMessage += '\n\nFiles uploaded:';
+      files.forEach(file => {
+        enhancedMessage += `\n- ${file.name} (${file.type}, ${Math.round(file.size / 1024)}KB)`;
+      });
+    }
+
     const response = await fetch(config.endpoint, {
       method: 'POST',
       headers: {
@@ -128,7 +160,7 @@ async function callClaudeAPI(message, conversationHistory = []) {
         max_tokens: 1024,
         messages: [{
           role: 'user',
-          content: message
+          content: enhancedMessage
         }]
       })
     });
@@ -163,7 +195,7 @@ function getFallbackResponse(provider, message) {
 /**
  * Main function to get AI response
  */
-export async function getAIResponse(message, provider = 'gemini', conversationHistory = []) {
+export async function getAIResponse(message, provider = 'gemini', conversationHistory = [], files = []) {
   if (!message || !message.trim()) {
     return "Please provide a message for me to respond to.";
   }
@@ -171,13 +203,13 @@ export async function getAIResponse(message, provider = 'gemini', conversationHi
   try {
     switch (provider) {
       case 'gemini':
-        return await callGeminiAPI(message, conversationHistory);
+        return await callGeminiAPI(message, conversationHistory, files);
       
       case 'chatgpt':
-        return await callChatGPTAPI(message, conversationHistory);
+        return await callChatGPTAPI(message, conversationHistory, files);
       
       case 'claude':
-        return await callClaudeAPI(message, conversationHistory);
+        return await callClaudeAPI(message, conversationHistory, files);
       
       default:
         return getFallbackResponse(provider, message);

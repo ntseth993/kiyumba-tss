@@ -44,6 +44,23 @@ export const getVisiblePosts = async () => {
   }
 };
 
+// Upload media file (image or video)
+export const uploadMedia = async (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve({
+        url: reader.result,
+        type: file.type.startsWith('image/') ? 'image' : 'video',
+        name: file.name,
+        size: file.size
+      });
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 // Create a new post
 export const createPost = async (postData) => {
   if (useLocalStorage) {
@@ -53,7 +70,8 @@ export const createPost = async (postData) => {
       ...postData,
       date: new Date().toISOString(),
       likes: 0,
-      comments: []
+      comments: [],
+      visible: postData.visible !== false
     };
     const updated = [newPost, ...posts];
     localStorage.setItem('posts', JSON.stringify(updated));

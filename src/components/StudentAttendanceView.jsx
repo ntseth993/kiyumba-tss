@@ -24,7 +24,7 @@ const StudentAttendanceView = () => {
   const loadAttendanceData = async () => {
     try {
       // Get all attendance records
-      const allRecords = attendanceService.getAttendanceByDate(new Date().toISOString().split('T')[0]);
+      const allRecords = await attendanceService.getAttendanceByDate(new Date().toISOString().split('T')[0]);
       
       // Filter for current student
       const studentRecords = allRecords.filter(r => 

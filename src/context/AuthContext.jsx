@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { getDepartmentById, DEPARTMENTS } from '../services/departmentsService';
+import { loginUser } from '../services/authService';
 
 const AuthContext = createContext(null);
 

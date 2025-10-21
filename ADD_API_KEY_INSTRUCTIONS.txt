@@ -1,0 +1,54 @@
+🚀 ENABLE REAL AI CHAT - SIMPLE STEPS
+==========================================
+
+YOUR .env FILE IS AT: c:\Users\SETH'S\Desktop\kiyumba react\.env
+
+CURRENT CONTENT (missing AI key):
+----------------------------------
+VITE_DATABASE_URL=postgresql://neondb_owner:npg_KTpAi49YWhEC@ep-weathered-bread-adf5tfb-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+
+
+WHAT YOU NEED TO ADD:
+----------------------------------
+After the database line, add a blank line and then:
+
+VITE_GEMINI_API_KEY=YOUR_API_KEY_HERE
+
+
+STEP-BY-STEP:
+----------------------------------
+
+1. BROWSER OPENED: Get your API key from Google AI Studio
+   - Click "Create API Key"
+   - Click "Create API key in new project"
+   - COPY the key (starts with AIzaSy...)
+
+2. OPEN THE .env FILE:
+   - Open: c:\Users\SETH'S\Desktop\kiyumba react\.env
+   - Add a new line at the end
+   - Paste: VITE_GEMINI_API_KEY=AIzaSy... (your actual key)
+
+3. SAVE THE FILE
+
+4. RESTART YOUR DEV SERVER:
+   - Stop current server (Ctrl+C in terminal)
+   - Run: npm run dev
+
+5. TEST:
+   - Login as student@kiyumba.com / student123
+   - Click "AI Assistant" tab
+   - Ask anything - you'll get REAL AI responses!
+
+
+EXAMPLE OF COMPLETE .env FILE:
+----------------------------------
+VITE_DATABASE_URL=postgresql://neondb_owner:npg_KTpAi49YWhEC@ep-weathered-bread-adf5tfb-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+
+VITE_GEMINI_API_KEY=AIzaSyDemoKey123456789-YourRealKeyHere
+
+
+THAT'S IT! 🎉
+----------------------------------
+After restarting the server, AI chat will work with real Google Gemini AI!
+
+NO CREDIT CARD NEEDED - 100% FREE!

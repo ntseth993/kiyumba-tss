@@ -72,6 +72,30 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Stats Section */}
+      <section className="stats-section">
+        <div className="container">
+          <div className="stats-grid">
+            <div className="stat-item">
+              <div className="stat-number">500+</div>
+              <div className="stat-label">Students</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">50+</div>
+              <div className="stat-label">Expert Teachers</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">4</div>
+              <div className="stat-label">Programs</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-number">95%</div>
+              <div className="stat-label">Success Rate</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="features">
         <div className="container">
@@ -226,14 +250,14 @@ const Home = () => {
                           year: 'numeric' 
                         })}
                       </span>
-                      <div className="post-engagement">
+                      <div className="home-post-stats">
                         <span>
                           <Heart size={16} />
-                          {post.likes}
+                          {post.likes || 0}
                         </span>
                         <span>
                           <MessageCircle size={16} />
-                          {post.comments.length}
+                          {post.comments?.length || 0}
                         </span>
                       </div>
                     </div>
@@ -261,6 +285,45 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Location Section */}
+      <section className="location-section">
+        <div className="container">
+          <h2 className="section-title">Visit Us</h2>
+          <p className="section-subtitle">
+            Find Kiyumba Technical Secondary School on the map
+          </p>
+          <div className="map-container">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3987.5!2d30.0!3d-1.95!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMcKwNTcnMDAuMCJTIDMwwrAwMCcwMC4wIkU!5e0!3m2!1sen!2srw!4v1234567890!5m2!1sen!2srw"
+              width="100%"
+              height="450"
+              style={{ border: 0, borderRadius: '12px' }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Kiyumba Technical Secondary School Location"
+            ></iframe>
+          </div>
+          <div className="location-info">
+            <div className="location-card">
+              <h3>Address</h3>
+              <p>Kiyumba, Rwanda</p>
+            </div>
+            <div className="location-card">
+              <h3>Contact</h3>
+              <p>Phone: +250 XXX XXX XXX</p>
+              <p>Email: info@kiyumba.com</p>
+            </div>
+            <div className="location-card">
+              <h3>Opening Hours</h3>
+              <p>Monday - Friday: 7:00 AM - 5:00 PM</p>
+              <p>Saturday: 8:00 AM - 12:00 PM</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );
