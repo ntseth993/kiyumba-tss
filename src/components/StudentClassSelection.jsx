@@ -50,7 +50,7 @@ const StudentClassSelection = () => {
   };
 
   // Group departments by type
-  const tradeDepartments = availableDepartments.filter(dept =>
+  const tradeDepartments = (availableDepartments || []).filter(dept =>
     ['sod', 'wod', 'buc', 'fashion'].includes(dept.id.toLowerCase())
   );
 

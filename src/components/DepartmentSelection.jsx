@@ -31,11 +31,11 @@ const DepartmentSelection = () => {
   };
 
   // Group departments by type
-  const tradeDepartments = availableDepartments.filter(dept =>
+  const tradeDepartments = (availableDepartments || []).filter(dept =>
     ['SOD', 'WOD', 'BUC', 'FASHION'].includes(dept.id.toUpperCase())
   );
 
-  const generalDepartments = availableDepartments.filter(dept =>
+  const generalDepartments = (availableDepartments || []).filter(dept =>
     !['SOD', 'WOD', 'BUC', 'FASHION'].includes(dept.id.toUpperCase())
   );
 

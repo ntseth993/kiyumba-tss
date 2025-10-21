@@ -276,7 +276,9 @@ const DOSDashboard = () => {
     const reportData = {
       class: selectedClassForReports,
       totalAssessments: filteredMarks.length,
-      totalStudents: Math.max(...filteredMarks.map(m => m.totalStudents)),
+      totalStudents: filteredMarks.length > 0 
+        ? Math.max(...filteredMarks.map(m => m.totalStudents || 0).filter(n => n > 0))
+        : 0,
       assessments: filteredMarks
     };
 
@@ -1056,7 +1058,7 @@ const DOSDashboard = () => {
                     </p>
                   </div>
 
-                  {selectedMarksData.assessments.map((assessment, index) => (
+                  {(selectedMarksData.assessments || []).map((assessment, index) => (
                     <div key={assessment.id} style={{ marginBottom: '2rem' }}>
                       <h3 style={{ color: '#1e293b', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '2px solid #667eea' }}>
                         {assessment.assessmentName} - {assessment.subject}
@@ -1073,7 +1075,7 @@ const DOSDashboard = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {assessment.students.map((student) => (
+                            {(assessment.students || []).map((student) => (
                               <tr key={student.id}>
                                 <td className="student-name">{student.name}</td>
                                 <td><strong style={{ color: '#667eea' }}>{student.mark}/{student.maxMark}</strong></td>
@@ -1127,7 +1129,7 @@ const DOSDashboard = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedMarksData.students.map((student) => (
+                        {(selectedMarksData.students || []).map((student) => (
                           <tr key={student.id}>
                             <td className="student-name">{student.name}</td>
                             <td><strong style={{ color: '#667eea' }}>{student.mark}/{student.maxMark}</strong></td>
@@ -1209,7 +1211,7 @@ const DOSDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedStudentMarks.marks.map((mark) => {
+                      {(selectedStudentMarks.marks || []).map((mark) => {
                         const percentage = ((mark.mark / mark.maxMark) * 100).toFixed(1);
                         return (
                           <tr key={mark.id}>
@@ -1260,7 +1262,7 @@ const DOSDashboard = () => {
                     <div style={{ background: '#f3f4f6', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
                       <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>Highest</div>
                       <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#10b981' }}>
-                        {selectedStudentMarks.marks.length > 0
+                        {selectedStudentMarks.marks && selectedStudentMarks.marks.length > 0
                           ? Math.max(...selectedStudentMarks.marks.map(m => (m.mark / m.maxMark) * 100)).toFixed(1)
                           : '0'}%
                       </div>
@@ -1268,7 +1270,7 @@ const DOSDashboard = () => {
                     <div style={{ background: '#f3f4f6', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
                       <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.25rem' }}>Lowest</div>
                       <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ef4444' }}>
-                        {selectedStudentMarks.marks.length > 0
+                        {selectedStudentMarks.marks && selectedStudentMarks.marks.length > 0
                           ? Math.min(...selectedStudentMarks.marks.map(m => (m.mark / m.maxMark) * 100)).toFixed(1)
                           : '0'}%
                       </div>
