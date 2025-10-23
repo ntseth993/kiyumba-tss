@@ -187,6 +187,87 @@ export const notificationService = {
     return notifications.filter(n => n.priority === priority);
   },
 
+  // Send like notification to post author
+  sendLikeNotification(postId, likerName, authorId) {
+    return this.createNotification({
+      type: 'like',
+      title: 'New Like on Your Post',
+      message: `${likerName} liked your post.`,
+      priority: 'low',
+      actionUrl: `/posts/${postId}`,
+      metadata: { postId, likerName, type: 'like' }
+    });
+  },
+
+  // Send share notification to post author
+  sendShareNotification(postId, platform, authorId) {
+    return this.createNotification({
+      type: 'share',
+      title: 'Post Shared',
+      message: `Your post was shared on ${platform}.`,
+      priority: 'low',
+      actionUrl: `/posts/${postId}`,
+      metadata: { postId, platform, type: 'share' }
+    });
+  },
+
+  // Send comment notification to post author
+  sendCommentNotification(postId, commenterName, authorId, commentPreview) {
+    return this.createNotification({
+      type: 'comment',
+      title: 'New Comment on Your Post',
+      message: `${commenterName}: "${commentPreview.substring(0, 50)}${commentPreview.length > 50 ? '...' : ''}"`,
+      priority: 'medium',
+      actionUrl: `/posts/${postId}`,
+      metadata: { postId, commenterName, commentPreview, type: 'comment' }
+    });
+  },
+
+  // Get engagement notifications (likes, shares, comments)
+  getEngagementNotifications(userId) {
+    const notifications = this.getUserNotifications(userId);
+    return notifications.filter(n =>
+      n.type === 'like' || n.type === 'share' || n.type === 'comment'
+    );
+  },
+
+  // Get recent activity summary
+  getActivitySummary(userId, days = 7) {
+    const notifications = this.getUserNotifications(userId);
+    const cutoffDate = new Date(Date.now() - (days * 24 * 60 * 60 * 1000));
+
+    const recentActivity = notifications.filter(n =>
+      new Date(n.timestamp) >= cutoffDate &&
+      (n.type === 'like' || n.type === 'share' || n.type === 'comment')
+    );
+
+    const summary = {
+      totalEngagement: recentActivity.length,
+      likes: recentActivity.filter(n => n.type === 'like').length,
+      shares: recentActivity.filter(n => n.type === 'share').length,
+      comments: recentActivity.filter(n => n.type === 'comment').length,
+      topPlatform: this.getTopSharePlatform(recentActivity)
+    };
+
+    return summary;
+  },
+
+  // Get top sharing platform
+  getTopSharePlatform(activities) {
+    const shareActivities = activities.filter(a => a.type === 'share');
+    const platformCounts = {};
+
+    shareActivities.forEach(activity => {
+      const platform = activity.metadata?.platform || 'unknown';
+      platformCounts[platform] = (platformCounts[platform] || 0) + 1;
+    });
+
+    const topPlatform = Object.entries(platformCounts)
+      .sort(([,a], [,b]) => b - a)[0];
+
+    return topPlatform ? { platform: topPlatform[0], count: topPlatform[1] } : null;
+  },
+
   // Clear all notifications
   clearAllNotifications() {
     localStorage.removeItem('notifications');

@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+const API_BASE = import.meta.env.VITE_USE_LOCAL_STORAGE === 'true' ? 'INVALID_API_URL' : (import.meta.env.VITE_API_BASE || '/api');
+const useLocalStorage = import.meta.env.VITE_USE_LOCAL_STORAGE === 'true';
 
 // Initialize sample events data
 const initializeEvents = () => {
@@ -14,6 +15,22 @@ const initializeEvents = () => {
 };
 
 export const getEvents = async () => {
+  // Always use localStorage if explicitly enabled
+  if (useLocalStorage) {
+    console.log('Using localStorage for events');
+    initializeEvents();
+    const stored = localStorage.getItem('events');
+    return stored ? JSON.parse(stored) : [];
+  }
+
+  // If localStorage mode is not explicitly enabled, still try localStorage first if data exists
+  const localStorageEvents = localStorage.getItem('events');
+  if (localStorageEvents) {
+    console.log('Using localStorage fallback for events');
+    initializeEvents();
+    return JSON.parse(localStorageEvents);
+  }
+
   try {
     // Initialize sample data if not exists
     initializeEvents();
@@ -42,6 +59,29 @@ export const getUpcomingEvents = async () => {
 };
 
 export const createEvent = async (eventData) => {
+  // Always use localStorage if explicitly enabled
+  if (useLocalStorage) {
+    console.log('Using localStorage for creating event');
+    initializeEvents();
+    const events = JSON.parse(localStorage.getItem('events') || '[]');
+    const newEvent = { id: Date.now(), ...eventData, createdAt: new Date().toISOString() };
+    const updated = [newEvent, ...events];
+    localStorage.setItem('events', JSON.stringify(updated));
+    return newEvent;
+  }
+
+  // If localStorage mode is not explicitly enabled, still try localStorage first
+  const localStorageEvents = localStorage.getItem('events');
+  if (localStorageEvents || !localStorageEvents) {
+    console.log('Using localStorage fallback for creating event');
+    initializeEvents();
+    const events = JSON.parse(localStorage.getItem('events') || '[]');
+    const newEvent = { id: Date.now(), ...eventData, createdAt: new Date().toISOString() };
+    const updated = [newEvent, ...events];
+    localStorage.setItem('events', JSON.stringify(updated));
+    return newEvent;
+  }
+
   try {
     const response = await fetch(`${API_BASE}/api/events`, {
       method: 'POST',

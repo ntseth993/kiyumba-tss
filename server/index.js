@@ -344,6 +344,14 @@ app.post('/api/staff-roles', async (req, res) => {
   }
 });
 
+// Import posts API route
+const postsRoutes = require('../api/posts.cjs');
+const usersRoutes = require('../api/users/index.cjs');
+
+// Mount API routes
+app.use('/api/posts', postsRoutes);
+app.use('/api/users', usersRoutes);
+
 // ==================== CHAT ====================
 const { getChatMessages, sendChatMessage, deleteChatMessage } = require('./simple-chat');
 

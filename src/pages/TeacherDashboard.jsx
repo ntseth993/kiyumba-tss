@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import DashboardFeed from '../components/DashboardFeed';
 import { BookOpen, Calendar, FileText, User } from 'lucide-react';
 import './TeacherDashboard.css';
 
@@ -75,9 +74,6 @@ const TeacherDashboard = () => {
 						</div>
 					</div>
 				</div>
-
-				{/* Posts and Announcements Feed */}
-				<DashboardFeed />
 
 				<div className="dashboard-grid">
 					<div className="dashboard-section">

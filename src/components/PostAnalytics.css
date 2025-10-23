@@ -1,0 +1,208 @@
+.post-analytics {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  margin: 1rem 0;
+}
+
+.analytics-loading,
+.analytics-error {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-light);
+  font-size: 1rem;
+}
+
+.analytics-header {
+  margin-bottom: 2rem;
+}
+
+.analytics-header h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.analytics-summary {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.analytics-sections {
+  display: grid;
+  gap: 2rem;
+}
+
+.analytics-section h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--primary-color);
+}
+
+/* Platform Stats */
+.platform-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.platform-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.platform-icon {
+  font-size: 1.5rem;
+}
+
+.platform-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  text-transform: capitalize;
+}
+
+.platform-count {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+/* Activity List */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+  background: #f1f5f9;
+  transform: translateX(4px);
+}
+
+.activity-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+}
+
+.activity-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.activity-user {
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 0.875rem;
+}
+
+.activity-platform,
+.activity-comment,
+.activity-like {
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+.activity-time {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  white-space: nowrap;
+}
+
+/* Engagement Metrics */
+.engagement-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.engagement-metric {
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--primary-color), #667eea);
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .analytics-summary {
+    flex-direction: column;
+  }
+
+  .summary-item {
+    justify-content: center;
+  }
+
+  .platform-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .engagement-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .activity-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .activity-time {
+    align-self: flex-end;
+  }
+}

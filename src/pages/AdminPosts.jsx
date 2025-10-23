@@ -15,7 +15,8 @@ const AdminPosts = () => {
     content: '',
     author: 'Admin',
     type: 'blog',
-    mediaUrl: '',
+    imageUrl: '',
+    videoUrl: '',
     visible: true
   });
   const [uploadingMedia, setUploadingMedia] = useState(false);
@@ -38,10 +39,21 @@ const AdminPosts = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      alert('File size must be less than 10MB');
+    // Check file size before uploading
+    const maxSize = file.type.startsWith('video/') ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert(`File size must be less than ${file.type.startsWith('video/') ? '100MB' : '10MB'}`);
       return;
+    }
+
+    // Additional check for video data URL size
+    if (file.type.startsWith('video/')) {
+      // Estimate data URL size (base64 is ~4/3 of original size)
+      const estimatedDataUrlSize = file.size * 1.37;
+      if (estimatedDataUrlSize > 50000000) { // ~50MB
+        alert('This video file will create a very large data URL that may cause upload issues. Please use a smaller video file (under 35MB) or consider uploading to an external service.');
+        return;
+      }
     }
 
     setUploadingMedia(true);
@@ -49,12 +61,12 @@ const AdminPosts = () => {
       const mediaData = await uploadMedia(file);
       setFormData(prev => ({
         ...prev,
-        mediaUrl: mediaData.url,
+        [mediaData.type === 'image' ? 'imageUrl' : 'videoUrl']: mediaData.url,
         type: mediaData.type
       }));
     } catch (error) {
       console.error('Error uploading media:', error);
-      alert('Failed to upload media');
+      alert('Failed to upload media: ' + error.message);
     } finally {
       setUploadingMedia(false);
     }
@@ -65,6 +77,12 @@ const AdminPosts = () => {
     
     if (!formData.title.trim() || !formData.excerpt.trim()) {
       alert('Please fill in all required fields');
+      return;
+    }
+
+    // Check for video size issues
+    if (formData.videoUrl && formData.videoUrl.length > 50000000) {
+      alert('Video file is too large (over 50MB). Please use a smaller video file or consider uploading to an external service like YouTube or Vimeo.');
       return;
     }
 
@@ -84,7 +102,8 @@ const AdminPosts = () => {
       handleCloseModal();
     } catch (error) {
       console.error('Error saving post:', error);
-      alert('Failed to save post');
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to save post';
+      alert(`Failed to save post: ${errorMessage}`);
     }
   };
 
@@ -92,11 +111,12 @@ const AdminPosts = () => {
     setEditingPost(post);
     setFormData({
       title: post.title,
-      excerpt: post.excerpt,
+      excerpt: post.excerpt || post.content?.substring(0, 150) || '',
       content: post.content || '',
       author: post.author || 'Admin',
       type: post.type || 'blog',
-      mediaUrl: post.mediaUrl || '',
+      imageUrl: post.imageUrl || post.mediaUrl || '',
+      videoUrl: post.videoUrl || '',
       visible: post.visible !== false
     });
     setShowModal(true);
@@ -134,7 +154,8 @@ const AdminPosts = () => {
       content: '',
       author: 'Admin',
       type: 'blog',
-      mediaUrl: '',
+      imageUrl: '',
+      videoUrl: '',
       visible: true
     });
   };
@@ -193,14 +214,19 @@ const AdminPosts = () => {
         <div className="posts-management-grid">
           {filteredPosts.map((post) => (
             <div key={post.id} className="post-management-card">
-              {post.mediaUrl && (
+              {post.imageUrl && (
                 <div className="post-thumbnail">
-                  {post.type === 'image' && <img src={post.mediaUrl} alt={post.title} />}
-                  {post.type === 'video' && (
-                    <video>
-                      <source src={post.mediaUrl} type="video/mp4" />
-                    </video>
-                  )}
+                  <img src={post.imageUrl} alt={post.title} />
+                  <span className="post-type-badge">{post.type}</span>
+                </div>
+              )}
+              {post.videoUrl && (
+                <div className="post-thumbnail">
+                  <video style={{ maxWidth: '100%', height: 'auto' }}>
+                    <source src={post.videoUrl} type="video/mp4" />
+                    <source src={post.videoUrl} type="video/webm" />
+                    <source src={post.videoUrl} type="video/ogg" />
+                  </video>
                   <span className="post-type-badge">{post.type}</span>
                 </div>
               )}
@@ -349,16 +375,20 @@ const AdminPosts = () => {
                         <label htmlFor="media-upload" className="upload-label">
                           <Upload size={24} />
                           {uploadingMedia ? 'Uploading...' : `Click to upload ${formData.type}`}
-                          <small>Max size: 10MB</small>
+                          <small>Max size: {formData.type === 'video' ? '100MB' : '10MB'}</small>
                         </label>
-                        {formData.mediaUrl && (
+                        {formData.imageUrl && (
                           <div className="media-preview">
-                            {formData.type === 'image' && <img src={formData.mediaUrl} alt="Preview" />}
-                            {formData.type === 'video' && (
-                              <video controls>
-                                <source src={formData.mediaUrl} type="video/mp4" />
-                              </video>
-                            )}
+                            <img src={formData.imageUrl} alt="Preview" />
+                          </div>
+                        )}
+                        {formData.videoUrl && (
+                          <div className="media-preview">
+                            <video controls style={{ maxWidth: '100%', height: 'auto' }}>
+                              <source src={formData.videoUrl} type="video/mp4" />
+                              <source src={formData.videoUrl} type="video/webm" />
+                              <source src={formData.videoUrl} type="video/ogg" />
+                            </video>
                           </div>
                         )}
                       </div>

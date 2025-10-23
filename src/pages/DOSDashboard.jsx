@@ -39,7 +39,6 @@ import DOSStudentReports from '../components/DOSStudentReports';
 import Navbar from '../components/Navbar';
 import Chat from '../components/Chat';
 import Footer from '../components/Footer';
-import DashboardFeed from '../components/DashboardFeed';
 import { marksService } from '../services/marksService';
 import { studentsService } from '../services/studentsService';
 import { getDepartmentSubjects } from '../services/departmentSubjectsService';
@@ -66,7 +65,7 @@ const DOSDashboard = () => {
   const [selectedDepartmentFilter, setSelectedDepartmentFilter] = useState('All');
   const [selectedDepartment, setSelectedDepartment] = useState('All');
   const [expandedSections, setExpandedSections] = useState({ 
-    students: true,
+    students: false,
     subjectReports: false,
     departmentReports: false,
     individualReports: false,
@@ -97,10 +96,8 @@ const DOSDashboard = () => {
     email: '',
     class: 'L3',
     department: 'sod',
-    status: 'Active',
-    password: ''
+    status: 'Active'
   });
-  const [selectedMarksData, setSelectedMarksData] = useState(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -301,11 +298,6 @@ const DOSDashboard = () => {
     setShowMarksReportModal(true);
   };
 
-  const handleViewMarksDetails = (markEntry) => {
-    setSelectedMarksData(markEntry);
-    setShowMarksReportModal(true);
-  };
-
   const handleAddStudent = () => {
     setShowAddStudentModal(true);
   };
@@ -323,25 +315,12 @@ const DOSDashboard = () => {
   };
 
   const handleDeleteStudent = async (studentId) => {
-    if (window.confirm('Are you sure you want to delete this student? This will also delete their user account and they will no longer be able to log in.')) {
+    if (window.confirm('Are you sure you want to delete this student?')) {
       try {
-        // Find the student to get their email
-        const student = students.find(s => s.id === studentId);
-        
-        // Delete student record
         await studentsService.deleteStudent(studentId);
-        
-        // Delete user account
-        if (student) {
-          const users = JSON.parse(localStorage.getItem('users') || '[]');
-          const filteredUsers = users.filter(u => u.email !== student.email && u.studentId !== student.studentId);
-          localStorage.setItem('users', JSON.stringify(filteredUsers));
-        }
-        
         const updatedStudents = await studentsService.getStudents();
         setStudents(updatedStudents);
         setAcademicStats(prev => ({ ...prev, totalStudents: updatedStudents.length }));
-        alert('Student and associated user account deleted successfully!');
       } catch (error) {
         console.error('Error deleting student:', error);
         alert('Failed to delete student');
@@ -356,60 +335,24 @@ const DOSDashboard = () => {
         return;
       }
 
-      // Use custom password if provided, otherwise use default
-      const defaultPassword = 'student123';
-      const password = newStudent.password.trim() || defaultPassword;
-      const studentId = `STU${Date.now()}`;
-
-      // Create student record
       const studentData = {
         ...newStudent,
-        studentId: studentId,
+        studentId: `STU${Date.now()}`,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        attendance: '0',
-        gpa: '0.00'
+        updatedAt: new Date().toISOString()
       };
 
       const savedStudent = await studentsService.createStudent(studentData);
-
-      // Create user account for the student
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      
-      // Check if user already exists
-      const existingUser = users.find(u => u.email === newStudent.email);
-      
-      if (!existingUser) {
-        const newUser = {
-          id: Date.now(),
-          name: newStudent.name,
-          email: newStudent.email,
-          password: password,
-          role: 'student',
-          class: newStudent.class,
-          department: newStudent.department,
-          status: newStudent.status,
-          studentId: studentId,
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(newStudent.name)}&background=EF4444&color=fff`,
-          requiresClassSelection: false,
-          createdAt: new Date().toISOString()
-        };
-
-        users.push(newUser);
-        localStorage.setItem('users', JSON.stringify(users));
-      }
-
       const updatedStudents = await studentsService.getStudents();
       setStudents(updatedStudents);
       setAcademicStats(prev => ({ ...prev, totalStudents: updatedStudents.length }));
 
       setShowAddStudentModal(false);
-      setNewStudent({ name: '', email: '', class: 'L3', department: 'sod', status: 'Active', password: '' });
-      
-      alert(`Student added successfully!\n\nLogin Credentials:\nEmail: ${newStudent.email}\nPassword: ${password}\n\nPlease share these credentials with the student.`);
+      setNewStudent({ name: '', email: '', class: 'L3', department: 'sod', status: 'Active' });
+      alert('Student added successfully!');
     } catch (error) {
       console.error('Error saving student:', error);
-      alert('Failed to add student: ' + error.message);
+      alert('Failed to add student');
     }
   };
 
@@ -426,31 +369,12 @@ const DOSDashboard = () => {
       };
 
       await studentsService.updateStudent(currentStudent.id, updatedStudentData);
-      
-      // Update user account if it exists
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const userIndex = users.findIndex(u => u.email === currentStudent.email || u.studentId === currentStudent.studentId);
-      
-      if (userIndex !== -1) {
-        users[userIndex] = {
-          ...users[userIndex],
-          name: newStudent.name,
-          email: newStudent.email,
-          class: newStudent.class,
-          department: newStudent.department,
-          status: newStudent.status,
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(newStudent.name)}&background=EF4444&color=fff`,
-          updatedAt: new Date().toISOString()
-        };
-        localStorage.setItem('users', JSON.stringify(users));
-      }
-
       const updatedStudents = await studentsService.getStudents();
       setStudents(updatedStudents);
 
       setShowEditStudentModal(false);
       setCurrentStudent(null);
-      setNewStudent({ name: '', email: '', class: 'L3', department: 'sod', status: 'Active', password: '' });
+      setNewStudent({ name: '', email: '', class: 'L3', department: 'sod', status: 'Active' });
       alert('Student updated successfully!');
     } catch (error) {
       console.error('Error updating student:', error);
@@ -519,9 +443,6 @@ const DOSDashboard = () => {
             </div>
           ))}
         </div>
-
-        {/* Posts and Announcements Feed */}
-        <DashboardFeed />
 
         <div className="staff-grid">
           <div className="staff-section">
@@ -912,22 +833,9 @@ const DOSDashboard = () => {
                   <button 
                     className="btn btn-primary"
                     onClick={handleAddStudent}
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '8px', 
-                      backgroundColor: '#4F46E5',
-                      color: 'white',
-                      padding: '0.75rem 1.5rem',
-                      borderRadius: '8px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontWeight: '600',
-                      fontSize: '0.875rem'
-                    }}
                   >
                     <Plus size={18} />
-                    <span>Add New Student</span>
+                    Add New Student
                   </button>
 
                   <select 
@@ -1027,8 +935,6 @@ const DOSDashboard = () => {
                 </div>
               </div>
             )}
-          </div>
-
           {/* Discipline Management Section */}
           <div className="staff-section" style={{ gridColumn: '1 / -1' }}>
             <div className="section-header" style={{ cursor: 'pointer' }}>
@@ -1703,17 +1609,6 @@ const DOSDashboard = () => {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Password (optional)</label>
-                  <input
-                    type="text"
-                    value={newStudent.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    placeholder="Leave blank for default: student123"
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '2px solid #e5e7eb' }}
-                  />
-                  <small style={{ color: '#6b7280', fontSize: '0.875rem' }}>If not provided, default password 'student123' will be used</small>
-                </div>
-                <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>Class</label>
                   <select
                     value={newStudent.class}
@@ -1840,6 +1735,7 @@ const DOSDashboard = () => {
       )}
       <Chat />
       <Footer />
+    </div>
     </div>
   );
 };

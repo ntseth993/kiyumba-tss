@@ -1,8 +1,8 @@
-import { neon } from '@neondatabase/serverless';
+const { neon } = require('@neondatabase/serverless');
 
 const sql = neon(process.env.DATABASE_URL);
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -33,7 +33,7 @@ export default async function handler(req, res) {
 async function handleGet(req, res) {
   // Get all users
   const users = await sql`
-    SELECT 
+    SELECT
       id,
       email,
       name,
@@ -58,7 +58,7 @@ async function handlePut(req, res) {
 
   const result = await sql`
     UPDATE users
-    SET 
+    SET
       name = ${name},
       email = ${email},
       role = ${role}
@@ -81,6 +81,8 @@ async function handleDelete(req, res) {
   }
 
   await sql`DELETE FROM users WHERE id = ${userId}`;
-  
+
   res.status(200).json({ success: true });
 }
+
+module.exports = handler;

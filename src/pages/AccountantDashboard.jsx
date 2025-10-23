@@ -48,6 +48,8 @@ const AccountantDashboard = () => {
   const [selectedBudgetCategory, setSelectedBudgetCategory] = useState('All');
   const [showBudgetApprovalModal, setShowBudgetApprovalModal] = useState(false);
   const [selectedBudgetForApproval, setSelectedBudgetForApproval] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [recentTransactions, setRecentTransactions] = useState([]);
 
   useEffect(() => {
     loadDashboardData();

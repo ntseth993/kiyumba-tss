@@ -11,8 +11,11 @@ import AdminUserManagement from './pages/AdminUserManagement';
 import AdminContent from './pages/AdminContent';
 import AdminSettings from './pages/AdminSettings';
 import AdminPosts from './pages/AdminPosts';
-import AdminAnnouncements from './pages/AdminAnnouncements';
-import AdminMediaLibrary from './pages/AdminMediaLibrary';
+import AdminEvents from './pages/AdminEvents';
+import AdminNotifications from './pages/AdminNotifications';
+import AdminHighlights from './pages/AdminHighlights';
+import AdminWidgets from './pages/AdminWidgets';
+import AdminTools from './pages/AdminTools';
 import TeacherSettings from './pages/TeacherSettings';
 import StaffSettings from './pages/StaffSettings';
 import StudentSettings from './pages/StudentSettings';
@@ -141,18 +144,42 @@ function AppRoutes() {
           }
         />
         <Route
-          path="/admin/announcements"
+          path="/admin/events"
           element={
             <ProtectedRoute requiredRole="admin">
-              <AdminAnnouncements />
+              <AdminEvents />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/admin/media"
+          path="/admin/notifications"
           element={
             <ProtectedRoute requiredRole="admin">
-              <AdminMediaLibrary />
+              <AdminNotifications />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/highlights"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminHighlights />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/widgets"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminWidgets />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/tools"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminTools />
             </ProtectedRoute>
           }
         />

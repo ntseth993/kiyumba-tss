@@ -1,11 +1,20 @@
 // Announcements Service
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
-const useLocalStorage = !import.meta.env.VITE_API_BASE;
+const API_BASE = import.meta.env.VITE_USE_LOCAL_STORAGE === 'true' ? 'INVALID_API_URL' : (import.meta.env.VITE_API_BASE || '/api');
+const useLocalStorage = import.meta.env.VITE_USE_LOCAL_STORAGE === 'true';
 
 // Get all announcements
 export const getAnnouncements = async () => {
+  // Always use localStorage if explicitly enabled
   if (useLocalStorage) {
+    console.log('Using localStorage for announcements');
     return JSON.parse(localStorage.getItem('announcements') || '[]');
+  }
+
+  // Always try localStorage first, regardless of environment variable
+  const localStorageAnnouncements = JSON.parse(localStorage.getItem('announcements') || '[]');
+  if (localStorageAnnouncements.length > 0) {
+    console.log('Using localStorage fallback for announcements');
+    return localStorageAnnouncements;
   }
 
   try {
@@ -32,7 +41,9 @@ export const getActiveAnnouncements = async () => {
 
 // Create announcement
 export const createAnnouncement = async (data) => {
+  // Always use localStorage if explicitly enabled
   if (useLocalStorage) {
+    console.log('Using localStorage for creating announcement');
     const announcements = JSON.parse(localStorage.getItem('announcements') || '[]');
     const newAnnouncement = {
       id: Date.now(),
@@ -41,6 +52,21 @@ export const createAnnouncement = async (data) => {
       views: 0
     };
     const updated = [newAnnouncement, ...announcements];
+    localStorage.setItem('announcements', JSON.stringify(updated));
+    return newAnnouncement;
+  }
+
+  // Always try localStorage first, regardless of environment variable
+  const localStorageAnnouncements = JSON.parse(localStorage.getItem('announcements') || '[]');
+  if (localStorageAnnouncements.length >= 0) {
+    console.log('Using localStorage fallback for creating announcement');
+    const newAnnouncement = {
+      id: Date.now(),
+      ...data,
+      createdAt: new Date().toISOString(),
+      views: 0
+    };
+    const updated = [newAnnouncement, ...localStorageAnnouncements];
     localStorage.setItem('announcements', JSON.stringify(updated));
     return newAnnouncement;
   }
@@ -71,9 +97,20 @@ export const createAnnouncement = async (data) => {
 
 // Update announcement
 export const updateAnnouncement = async (id, data) => {
+  // Always use localStorage if explicitly enabled
   if (useLocalStorage) {
+    console.log('Using localStorage for updating announcement');
     const announcements = JSON.parse(localStorage.getItem('announcements') || '[]');
     const updated = announcements.map(a => a.id === id ? { ...a, ...data } : a);
+    localStorage.setItem('announcements', JSON.stringify(updated));
+    return updated.find(a => a.id === id);
+  }
+
+  // Always try localStorage first, regardless of environment variable
+  const localStorageAnnouncements = JSON.parse(localStorage.getItem('announcements') || '[]');
+  if (localStorageAnnouncements.length >= 0) {
+    console.log('Using localStorage fallback for updating announcement');
+    const updated = localStorageAnnouncements.map(a => a.id === id ? { ...a, ...data } : a);
     localStorage.setItem('announcements', JSON.stringify(updated));
     return updated.find(a => a.id === id);
   }
@@ -98,9 +135,20 @@ export const updateAnnouncement = async (id, data) => {
 
 // Delete announcement
 export const deleteAnnouncement = async (id) => {
+  // Always use localStorage if explicitly enabled
   if (useLocalStorage) {
+    console.log('Using localStorage for deleting announcement');
     const announcements = JSON.parse(localStorage.getItem('announcements') || '[]');
     const updated = announcements.filter(a => a.id !== id);
+    localStorage.setItem('announcements', JSON.stringify(updated));
+    return true;
+  }
+
+  // Always try localStorage first, regardless of environment variable
+  const localStorageAnnouncements = JSON.parse(localStorage.getItem('announcements') || '[]');
+  if (localStorageAnnouncements.length >= 0) {
+    console.log('Using localStorage fallback for deleting announcement');
+    const updated = localStorageAnnouncements.filter(a => a.id !== id);
     localStorage.setItem('announcements', JSON.stringify(updated));
     return true;
   }
@@ -123,9 +171,32 @@ export const deleteAnnouncement = async (id) => {
 
 // Mark announcement as viewed
 export const markAnnouncementAsViewed = async (id, userId) => {
+  // Always use localStorage if explicitly enabled
   if (useLocalStorage) {
+    console.log('Using localStorage for marking announcement as viewed');
     const announcements = JSON.parse(localStorage.getItem('announcements') || '[]');
     const updated = announcements.map(a => {
+      if (a.id === id) {
+        const viewedBy = a.viewedBy || [];
+        if (!viewedBy.includes(userId)) {
+          return {
+            ...a,
+            views: (a.views || 0) + 1,
+            viewedBy: [...viewedBy, userId]
+          };
+        }
+      }
+      return a;
+    });
+    localStorage.setItem('announcements', JSON.stringify(updated));
+    return updated.find(a => a.id === id);
+  }
+
+  // Always try localStorage first, regardless of environment variable
+  const localStorageAnnouncements = JSON.parse(localStorage.getItem('announcements') || '[]');
+  if (localStorageAnnouncements.length >= 0) {
+    console.log('Using localStorage fallback for marking announcement as viewed');
+    const updated = localStorageAnnouncements.map(a => {
       if (a.id === id) {
         const viewedBy = a.viewedBy || [];
         if (!viewedBy.includes(userId)) {

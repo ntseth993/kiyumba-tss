@@ -1,6 +1,6 @@
 import { sql } from '../lib/db';
 
-const useLocalStorage = !sql;
+const useLocalStorage = import.meta.env.VITE_USE_LOCAL_STORAGE === 'true';
 
 // Detect if running in production (Vercel) - use API endpoints
 const isProduction = import.meta.env.PROD || window.location.hostname !== 'localhost';
