@@ -1,10 +1,6 @@
-import { sql } from '../lib/db';
+import { apiService, ApiError } from './apiService';
 
 const useLocalStorage = import.meta.env.VITE_USE_LOCAL_STORAGE === 'true';
-
-// Detect if running in production (Vercel) - use API endpoints
-const isProduction = import.meta.env.PROD || window.location.hostname !== 'localhost';
-const API_BASE_URL = isProduction ? '' : 'http://localhost:5173';
 
 // Register a new user
 export const registerUser = async (userData) => {
@@ -14,7 +10,7 @@ export const registerUser = async (userData) => {
     
     // Check if email already exists
     if (users.find(u => u.email === userData.email)) {
-      throw new Error('Email already registered');
+      throw new ApiError('Email already registered', 400, 'This email is already registered. Please use a different email address.');
     }
 
     const newUser = {
@@ -47,57 +43,10 @@ export const registerUser = async (userData) => {
     return newUser;
   }
 
+  // Use API service for production
   try {
-    // Check if user exists
-    const existing = await sql`
-      SELECT id FROM users WHERE email = ${userData.email}
-    `;
-
-    if (existing.length > 0) {
-      throw new Error('Email already registered');
-    }
-
-    // Insert user
-    const result = await sql`
-      INSERT INTO users (
-        email,
-        password,
-        name,
-        role,
-        avatar
-      )
-      VALUES (
-        ${userData.email},
-        ${userData.password},
-        ${userData.firstName + ' ' + userData.lastName},
-        'student',
-        ${'https://ui-avatars.com/api/?name=' + userData.firstName + '+' + userData.lastName + '&background=4F46E5&color=fff'}
-      )
-      RETURNING id, email, name, role, avatar, created_at as "createdAt"
-    `;
-
-    // Insert application
-    await sql`
-      INSERT INTO applications (
-        full_name,
-        email,
-        phone,
-        program,
-        level,
-        education_level,
-        status
-      )
-      VALUES (
-        ${userData.firstName + ' ' + userData.lastName},
-        ${userData.email},
-        ${userData.phone || null},
-        ${userData.program},
-        ${userData.previousSchool || null},
-        'approved'
-      )
-    `;
-
-    return result[0];
+    const result = await apiService.post('/api/auth/register', userData);
+    return result;
   } catch (error) {
     console.error('Error registering user:', error);
     throw error;
@@ -111,24 +60,16 @@ export const loginUser = async (email, password) => {
     const user = users.find(u => u.email === email && u.password === password);
     
     if (!user) {
-      throw new Error('Invalid email or password');
+      throw new ApiError('Invalid email or password', 401, 'The email or password you entered is incorrect. Please try again.');
     }
     
     return user;
   }
 
+  // Use API service for production
   try {
-    const result = await sql`
-      SELECT id, email, name, role, avatar, created_at as "createdAt"
-      FROM users
-      WHERE email = ${email} AND password = ${password}
-    `;
-
-    if (result.length === 0) {
-      throw new Error('Invalid email or password');
-    }
-
-    return result[0];
+    const result = await apiService.post('/api/auth/login', { email, password });
+    return result;
   } catch (error) {
     console.error('Error logging in:', error);
     throw error;
@@ -147,21 +88,13 @@ export const updateUser = async (userId, updates) => {
       return users[index];
     }
     
-    throw new Error('User not found');
+    throw new ApiError('User not found', 404, 'The user could not be found.');
   }
 
+  // Use API service for production
   try {
-    const result = await sql`
-      UPDATE users
-      SET 
-        name = ${updates.name},
-        email = ${updates.email},
-        role = ${updates.role}
-      WHERE id = ${userId}
-      RETURNING id, email, name, role, avatar, created_at as "createdAt"
-    `;
-
-    return result[0];
+    const result = await apiService.put(`/api/users/${userId}`, updates);
+    return result;
   } catch (error) {
     console.error('Error updating user:', error);
     throw error;
@@ -177,11 +110,123 @@ export const deleteUser = async (userId) => {
     return true;
   }
 
+  // Use API service for production
   try {
-    await sql`DELETE FROM users WHERE id = ${userId}`;
+    await apiService.delete(`/api/users/${userId}`);
     return true;
   } catch (error) {
     console.error('Error deleting user:', error);
+    throw error;
+  }
+};
+
+// Get user profile
+export const getUserProfile = async (userId) => {
+  if (useLocalStorage) {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = users.find(u => u.id === userId);
+
+    if (!user) {
+      throw new ApiError('User not found', 404, 'The user profile could not be found.');
+    }
+
+    return user;
+  }
+
+  // Use API service for production
+  try {
+    const result = await apiService.get(`/api/users/${userId}`);
+    return result;
+  } catch (error) {
+    console.error('Error getting user profile:', error);
+    throw error;
+  }
+};
+
+// Change password
+export const changePassword = async (userId, currentPassword, newPassword) => {
+  if (useLocalStorage) {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const index = users.findIndex(u => u.id === userId);
+
+    if (index === -1) {
+      throw new ApiError('User not found', 404, 'User not found.');
+    }
+
+    if (users[index].password !== currentPassword) {
+      throw new ApiError('Invalid current password', 400, 'Current password is incorrect.');
+    }
+
+    users[index].password = newPassword;
+    localStorage.setItem('users', JSON.stringify(users));
+
+    return { success: true };
+  }
+
+  // Use API service for production
+  try {
+    const result = await apiService.post('/api/auth/change-password', {
+      userId,
+      currentPassword,
+      newPassword
+    });
+    return result;
+  } catch (error) {
+    console.error('Error changing password:', error);
+    throw error;
+  }
+};
+
+// Forgot password / Reset password
+export const resetPassword = async (email) => {
+  if (useLocalStorage) {
+    // Simulate password reset
+    return {
+      success: true,
+      message: 'If an account with that email exists, a reset link has been sent.'
+    };
+  }
+
+  // Use API service for production
+  try {
+    const result = await apiService.post('/api/auth/reset-password', { email });
+    return result;
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    throw error;
+  }
+};
+
+// Verify email
+export const verifyEmail = async (token) => {
+  if (useLocalStorage) {
+    // Simulate email verification
+    return { success: true, message: 'Email verified successfully' };
+  }
+
+  // Use API service for production
+  try {
+    const result = await apiService.post('/api/auth/verify-email', { token });
+    return result;
+  } catch (error) {
+    console.error('Error verifying email:', error);
+    throw error;
+  }
+};
+
+// Get all users (admin only)
+export const getAllUsers = async () => {
+  if (useLocalStorage) {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    return users;
+  }
+
+  // Use API service for production
+  try {
+    const result = await apiService.get('/api/users');
+    return result;
+  } catch (error) {
+    console.error('Error getting users:', error);
     throw error;
   }
 };

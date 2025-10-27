@@ -34,6 +34,12 @@ import ReportsPage from './pages/ReportsPage';
 import About from './pages/About';
 import Contact from './pages/Contact';
 
+// Meeting and Video Conference Components
+import Meetings from './pages/Meetings';
+import AdminMeetings from './pages/AdminMeetings';
+import AdminVisitings from './pages/AdminVisitings';
+import VisitRegister from './pages/VisitRegister';
+
 // New School Management System Dashboards
 import TeacherManagementDashboard from './pages/TeacherManagementDashboard';
 import TimetableManagement from './pages/TimetableManagement';
@@ -303,7 +309,7 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        
+
         {/* New Feature Routes */}
         <Route
           path="/attendance"
@@ -363,6 +369,41 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+        {/* Meeting and Video Conference Routes */}
+        <Route
+          path="/meetings"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'teacher', 'staff', 'student', 'parent']}>
+              <Meetings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/meetings"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'staff']}>
+              <AdminMeetings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/visitings"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'staff', 'secretary']}>
+              <AdminVisitings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/visit-register"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'teacher', 'staff', 'student', 'parent']}>
+              <VisitRegister />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Home />} />
       </Routes>
     </Router>
   );

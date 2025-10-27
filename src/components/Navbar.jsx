@@ -22,10 +22,11 @@ import {
   GraduationCap,
   Calendar,
   DollarSign,
-  FileText
+  FileText,
+  Video
 } from 'lucide-react';
 import ImpersonationBanner from './ImpersonationBanner';
-import NotificationBell from './NotificationBell';
+// import NotificationBell from './NotificationBell';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -175,7 +176,30 @@ const Navbar = () => {
             </Link>
           )}
 
-          {/* Search Bar */}
+          {/* Meeting Navigation */}
+          {isAuthenticated && ['admin', 'teacher', 'staff', 'student', 'parent'].includes(user?.role) && (
+            <Link to="/meetings" className="nav-link-modern">
+              <Video size={16} />
+              <span>Meetings</span>
+            </Link>
+          )}
+
+          {/* Admin Meeting Management */}
+          {isAuthenticated && ['admin', 'staff'].includes(user?.role) && (
+            <Link to="/admin/meetings" className="nav-link-modern">
+              <Users size={16} />
+              <span>Admin Meetings</span>
+            </Link>
+          )}
+
+          {/* Visit Registration */}
+          {isAuthenticated && ['admin', 'staff', 'secretary'].includes(user?.role) && (
+            <Link to="/admin/visitings" className="nav-link-modern">
+              <Calendar size={16} />
+              <span>Visitings</span>
+            </Link>
+          )}
+
           <div className="navbar-search-modern">
             <Search size={18} />
             <input
@@ -371,7 +395,30 @@ const Navbar = () => {
               </Link>
             )}
 
-            {/* Theme Toggle in Mobile */}
+            {/* Meeting Navigation - Mobile */}
+            {isAuthenticated && ['admin', 'teacher', 'staff', 'student', 'parent'].includes(user?.role) && (
+              <Link to="/meetings" className="mobile-nav-link" onClick={toggleMobileMenu}>
+                <Video size={18} />
+                <span>Meetings</span>
+              </Link>
+            )}
+
+            {/* Admin Meeting Management - Mobile */}
+            {isAuthenticated && ['admin', 'staff'].includes(user?.role) && (
+              <Link to="/admin/meetings" className="mobile-nav-link" onClick={toggleMobileMenu}>
+                <Users size={18} />
+                <span>Admin Meetings</span>
+              </Link>
+            )}
+
+            {/* Visit Registration - Mobile */}
+            {isAuthenticated && ['admin', 'staff', 'secretary'].includes(user?.role) && (
+              <Link to="/admin/visitings" className="mobile-nav-link" onClick={toggleMobileMenu}>
+                <Calendar size={18} />
+                <span>Visitings</span>
+              </Link>
+            )}
+
             <div className="mobile-theme-toggle">
               <button
                 className={`mobile-theme-option ${theme === 'light' ? 'active' : ''}`}

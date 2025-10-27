@@ -302,7 +302,55 @@
     color: #cbd5e1;
   }
 
-  .notification-footer {
-    border-top-color: #334155;
+.notification-badge.loading {
+  background: #6b7280;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
   }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Error State */
+.notification-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: #fee2e2;
+  border-bottom: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 0.8125rem;
+}
+
+.notification-error .retry-btn {
+  background: none;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-error .retry-btn:hover {
+  background: #fca5a5;
+  color: #7f1d1d;
+}
+
+.mark-all-read-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.delete-notification-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

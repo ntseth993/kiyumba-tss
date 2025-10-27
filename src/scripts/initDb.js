@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { initDatabase } from '../lib/db.js';
 
 // Get the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -8,9 +9,6 @@ const __dirname = dirname(__filename);
 
 // Load environment variables from .env file in the project root FIRST
 dotenv.config({ path: join(__dirname, '../../.env') });
-
-// Import AFTER dotenv is configured
-const { initDatabase } = await import('../lib/db.js');
 
 // Run database initialization
 console.log('Initializing database...');

@@ -424,6 +424,7 @@ const DOSDashboard = () => {
   return (
     <div className="staff-dashboard">
       <Navbar />
+      
       <div className="dashboard-container">
         <div className="stats-grid">
           {stats.map((stat) => (

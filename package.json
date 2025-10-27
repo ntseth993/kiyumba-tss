@@ -8,7 +8,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "db:init": "node src/scripts/initDb.js"
+    "db:init": "node src/scripts/initDb.js",
+    "db:init-simple": "node init-db-simple.cjs",
+    "db:test": "node basic-test.js"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
@@ -18,7 +20,7 @@
     "react-dom": "^19.1.1",
     "react-easy-crop": "^5.5.3",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^6.21.0"
+    "react-router-dom": "^6.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

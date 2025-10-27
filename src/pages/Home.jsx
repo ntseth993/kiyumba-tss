@@ -18,24 +18,14 @@ const Home = () => {
   const [highlights, setHighlights] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [showComments, setShowComments] = useState(false);
-  const [newComment, setNewComment] = useState('');
-  const [viewedPosts, setViewedPosts] = useState(new Set());
-  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
   // Check if user is admin
   const isAdmin = user?.role === 'admin' || user?.role === 'Admin' || user?.isAdmin;
 
   useEffect(() => {
-    loadPosts();
-  }, []);
+    loadAllData();
 
-  useEffect(() => {
-    loadEvents();
-    loadNotifications();
-    loadHighlights();
-  }, []);
-
-  useEffect(() => {
     // Listen for localStorage changes to refresh data
     const handleStorageChange = (e) => {
       if (e.key === 'schoolEvents' || e.key === 'schoolNotifications' || e.key === 'schoolHighlights') {
@@ -47,18 +37,11 @@ const Home = () => {
 
     window.addEventListener('storage', handleStorageChange);
 
-    // Also check for changes every 2 seconds in case same-tab changes
-    const interval = setInterval(() => {
-      loadEvents();
-      loadNotifications();
-      loadHighlights();
-    }, 2000);
-
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
     };
   }, []);
+
 
   useEffect(() => {
     // Track views for newly loaded posts
@@ -75,17 +58,11 @@ const Home = () => {
       const postsData = await getVisiblePosts();
       setPosts(postsData);
 
-      // Load comments for each post (with error handling)
+      // Initialize empty comments object - comments will be loaded on demand
       const commentsData = {};
-      for (const post of postsData) {
-        try {
-          const postComments = await getComments(post.id);
-          commentsData[post.id] = postComments;
-        } catch (error) {
-          console.log(`Comments not available for post ${post.id}, using empty array`);
-          commentsData[post.id] = [];
-        }
-      }
+      postsData.forEach(post => {
+        commentsData[post.id] = [];
+      });
       setComments(commentsData);
     } catch (error) {
       console.error('Error loading posts:', error);
@@ -107,6 +84,23 @@ const Home = () => {
       setNotifications(notificationsData);
     } catch (error) {
       console.error('Error loading notifications:', error);
+    }
+  };
+
+  // Optimized data loading - load everything in parallel
+  const loadAllData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        loadPosts(),
+        loadEvents(),
+        loadNotifications(),
+        loadHighlights()
+      ]);
+    } catch (error) {
+      console.error('Error loading home data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -216,27 +210,43 @@ const Home = () => {
     setSelectedPost(post);
     setShowComments(true);
 
-    // Load fresh comments for this post
-    try {
-      const postComments = await getComments(post.id);
-      setComments(prev => ({
-        ...prev,
-        [post.id]: postComments
-      }));
-    } catch (error) {
-      console.log(`Comments not available for post ${post.id}, using empty array`);
-      setComments(prev => ({
-        ...prev,
-        [post.id]: []
-      }));
+    // Load fresh comments for this post if not already loaded
+    if (!comments[post.id] || comments[post.id].length === 0) {
+      try {
+        const postComments = await getComments(post.id);
+        setComments(prev => ({
+          ...prev,
+          [post.id]: postComments
+        }));
+      } catch (error) {
+        console.log(`Comments not available for post ${post.id}, using empty array`);
+        setComments(prev => ({
+          ...prev,
+          [post.id]: []
+        }));
+      }
     }
   };
 
   return (
     <div className="home">
       <Navbar />
-      
-      {/* Hero Section */}
+
+      {/* Loading State */}
+      {loading && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '50vh',
+          fontSize: '1.2rem',
+          color: '#666'
+        }}>
+          Loading...
+        </div>
+      )}
+
+      {!loading && (
       <section className="hero">
         <div className="hero-overlay"></div>
         <div className="hero-container">
@@ -310,49 +320,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Quick Actions Panel */}
-      <section className="quick-actions">
-        <div className="container">
-          <div className="quick-actions-grid">
-            <Link to="/student" className="quick-action-card">
-              <div className="quick-action-icon">
-                <GraduationCap size={32} />
-              </div>
-              <h3>Student Portal</h3>
-              <p>Access your courses, grades, and materials</p>
-              <ArrowRight size={20} />
-            </Link>
-
-            <Link to="/teacher" className="quick-action-card">
-              <div className="quick-action-icon">
-                <Book size={32} />
-              </div>
-              <h3>Teacher Dashboard</h3>
-              <p>Manage classes, assignments, and students</p>
-              <ArrowRight size={20} />
-            </Link>
-
-            <Link to="/admin" className="quick-action-card">
-              <div className="quick-action-icon">
-                <Trophy size={32} />
-              </div>
-              <h3>Admin Panel</h3>
-              <p>Manage school operations and content</p>
-              <ArrowRight size={20} />
-            </Link>
-
-            <Link to="/contact" className="quick-action-card">
-              <div className="quick-action-icon">
-                <MessageCircle size={32} />
-              </div>
-              <h3>Contact Us</h3>
-              <p>Get in touch for inquiries and support</p>
-              <ArrowRight size={20} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Events Calendar Section */}
       <section className="events-calendar">
         <div className="container">
@@ -370,6 +337,10 @@ const Home = () => {
                   <Calendar size={16} />
                   Manage Events
                 </Link>
+                <Link to="/admin/meetings" className="btn btn-small btn-outline">
+                  <Video size={16} />
+                  Manage Meetings
+                </Link>
               </div>
             )}
           </div>
@@ -381,6 +352,7 @@ const Home = () => {
                 key={`dynamic-${event.id}`}
                 className={`event-card ${event.featured ? 'featured' : ''}`}
                 style={{ borderLeftColor: getEventTypeColor(event.eventType) }}
+
               >
                 {event.imageUrl && (
                   <div className="event-image">
@@ -427,6 +399,7 @@ const Home = () => {
             ))}
 
             {/* Always show hardcoded events */}
+
             <div className="event-card featured">
               <div className="event-image">
                 <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzNiODJmNiIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5GaW5hbCBFeGFtIFdlZWs8L3RleHQ+Cjwvc3ZnPg==" alt="Final Exam Week" />
@@ -942,7 +915,7 @@ const Home = () => {
                 )}
               </div>
             </div>
-          </div>
+Navbar.jsx:30   GET http://localhost:3026/src/components/NotificationBell.jsx?t=1761225791240 net::ERR_ABORTED 500 (Internal Server Error)          </div>
 
           <div className="highlights-actions">
             <Link to="/community" className="btn btn-outline">

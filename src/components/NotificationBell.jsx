@@ -6,6 +6,8 @@ import './NotificationBell.css';
 
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -13,7 +15,7 @@ const NotificationBell = () => {
 
   useEffect(() => {
     loadNotifications();
-    
+
     // Refresh notifications every 30 seconds
     const interval = setInterval(loadNotifications, 30000);
     return () => clearInterval(interval);
@@ -31,32 +33,76 @@ const NotificationBell = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const loadNotifications = () => {
-    const allNotifications = notificationService.getAllNotifications();
-    setNotifications(allNotifications.slice(0, 10)); // Show latest 10
-    setUnreadCount(notificationService.getUnreadCount());
-  };
+  const loadNotifications = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const handleNotificationClick = (notification) => {
-    notificationService.markAsRead(notification.id);
-    loadNotifications();
-    
-    if (notification.actionUrl) {
-      navigate(notification.actionUrl);
+      // Get current user ID
+      const currentUserId = notificationService.getCurrentUserId();
+
+      // Use async API calls with user ID
+      const [allNotifications, unreadCountResult] = await Promise.all([
+        notificationService.getUserNotifications(currentUserId),
+        notificationService.getUnreadCount(currentUserId)
+      ]);
+
+      // Ensure allNotifications is an array
+      const notificationsArray = Array.isArray(allNotifications) ? allNotifications : [];
+      setNotifications(notificationsArray.slice(0, 10)); // Show latest 10
+      setUnreadCount(unreadCountResult || 0);
+    } catch (err) {
+      console.error('Error loading notifications:', err);
+      setError('Failed to load notifications');
+      // Fallback to empty state
+      setNotifications([]);
+      setUnreadCount(0);
+    } finally {
+      setLoading(false);
     }
-    
-    setShowDropdown(false);
   };
 
-  const handleMarkAllRead = () => {
-    notificationService.markAllAsRead();
-    loadNotifications();
+  const handleNotificationClick = async (notification) => {
+    try {
+      await notificationService.markAsRead(notification.id);
+      await loadNotifications(); // Refresh after marking as read
+
+      if (notification.actionUrl) {
+        navigate(notification.actionUrl);
+      }
+
+      setShowDropdown(false);
+    } catch (err) {
+      console.error('Error handling notification click:', err);
+      // Still navigate even if marking as read fails
+      if (notification.actionUrl) {
+        navigate(notification.actionUrl);
+      }
+      setShowDropdown(false);
+    }
   };
 
-  const handleDeleteNotification = (e, notificationId) => {
+  const handleMarkAllRead = async () => {
+    try {
+      const currentUserId = notificationService.getCurrentUserId();
+      await notificationService.markAllAsRead(currentUserId);
+      await loadNotifications(); // Refresh after marking all as read
+    } catch (err) {
+      console.error('Error marking all as read:', err);
+      // Show error but don't block UI
+      setError('Failed to mark notifications as read');
+    }
+  };
+
+  const handleDeleteNotification = async (e, notificationId) => {
     e.stopPropagation();
-    notificationService.deleteNotification(notificationId);
-    loadNotifications();
+    try {
+      await notificationService.deleteNotification(notificationId);
+      await loadNotifications(); // Refresh after deletion
+    } catch (err) {
+      console.error('Error deleting notification:', err);
+      setError('Failed to delete notification');
+    }
   };
 
   const getNotificationIcon = (type) => {
@@ -84,11 +130,11 @@ const NotificationBell = () => {
     const date = new Date(timestamp);
     const now = new Date();
     const diff = now - date;
-    
+
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
-    
+
     if (minutes < 1) return 'Just now';
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
@@ -96,9 +142,20 @@ const NotificationBell = () => {
     return date.toLocaleDateString();
   };
 
+  if (loading && notifications.length === 0) {
+    return (
+      <div className="notification-bell-container" ref={dropdownRef}>
+        <button className="notification-bell-btn" title="Notifications">
+          <Bell size={20} />
+          <span className="notification-badge loading">...</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="notification-bell-container" ref={dropdownRef}>
-      <button 
+      <button
         className="notification-bell-btn"
         onClick={() => setShowDropdown(!showDropdown)}
         title="Notifications"
@@ -114,9 +171,10 @@ const NotificationBell = () => {
           <div className="notification-header">
             <h3>Notifications</h3>
             {unreadCount > 0 && (
-              <button 
+              <button
                 className="mark-all-read-btn"
                 onClick={handleMarkAllRead}
+                disabled={loading}
               >
                 <Check size={16} />
                 Mark all read
@@ -125,7 +183,17 @@ const NotificationBell = () => {
           </div>
 
           <div className="notification-list">
-            {notifications.length === 0 ? (
+            {error && (
+              <div className="notification-error">
+                <AlertCircle size={16} />
+                <span>{error}</span>
+                <button onClick={loadNotifications} className="retry-btn">
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {notifications.length === 0 && !loading && !error ? (
               <div className="empty-notifications">
                 <Bell size={48} color="#94a3b8" />
                 <p>No notifications</p>
@@ -150,6 +218,7 @@ const NotificationBell = () => {
                   <button
                     className="delete-notification-btn"
                     onClick={(e) => handleDeleteNotification(e, notification.id)}
+                    disabled={loading}
                   >
                     <X size={16} />
                   </button>
@@ -159,9 +228,9 @@ const NotificationBell = () => {
             )}
           </div>
 
-          {notifications.length > 0 && (
+          {notifications.length > 0 && !error && (
             <div className="notification-footer">
-              <button 
+              <button
                 className="view-all-btn"
                 onClick={() => {
                   navigate('/notifications');
