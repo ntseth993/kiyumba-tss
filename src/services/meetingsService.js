@@ -239,22 +239,57 @@ export const deleteMeeting = async (id) => {
 };
 
 export const startMeeting = async (id, user) => {
-  try {
-    const meetings = await getMeetings();
-    const meeting = meetings.find(m => m.id === id);
-    if (!meeting) throw new Error('Meeting not found');
+  if (useLocalStorage) {
+    const meetings = JSON.parse(localStorage.getItem('schoolMeetings') || '[]');
+    const meetingIndex = meetings.findIndex(m => m.id === id);
+    if (meetingIndex === -1) return null;
 
-    const updatedMeeting = {
-      ...meeting,
-      status: 'active',
+    meetings[meetingIndex] = {
+      ...meetings[meetingIndex],
+      status: 'in-progress',
       startedAt: new Date().toISOString(),
       startedBy: user
     };
 
-    return await updateMeeting(id, updatedMeeting);
+    localStorage.setItem('schoolMeetings', JSON.stringify(meetings));
+    
+    // Broadcast meeting started event through signaling
+    const wsSignaling = await import('./wsSignaling').then(m => m.default);
+    wsSignaling.send({
+      type: 'meeting-started',
+      meetingId: id,
+      startedBy: user.id
+    });
+    
+    return meetings[meetingIndex];
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/api/meetings/${id}/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${user.token}`
+      },
+      body: JSON.stringify({ user })
+    });
+
+    if (!response.ok) throw new Error('Failed to start meeting');
+    
+    const result = await response.json();
+    
+    // Broadcast meeting started event through signaling
+    const wsSignaling = await import('./wsSignaling').then(m => m.default);
+    wsSignaling.send({
+      type: 'meeting-started',
+      meetingId: id,
+      startedBy: user.id
+    });
+    
+    return result;
   } catch (error) {
     console.error('Error starting meeting:', error);
-    throw error;
+    return null;
   }
 };
 

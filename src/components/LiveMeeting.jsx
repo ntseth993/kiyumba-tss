@@ -12,7 +12,7 @@ import {
   denyMeetingAccess,
   getPendingParticipants
 } from '../services/meetingAccessService';
-import signaling from '../services/broadcastSignaling';
+import signaling from '../services/wsSignaling';
 import WaitingRoom from './WaitingRoom';
 import { useAuth } from '../context/AuthContext';
 import webRTCService from '../services/webRTCService';
@@ -48,6 +48,55 @@ const LiveMeeting = ({ meetingId, accessToken }) => {
   const [devices, setDevices] = useState({ cameras: [], microphones: [] });
   const [pingedUser, setPingedUser] = useState(null);
   const [quality, setQuality] = useState('auto');
+  const [meetingStarted, setMeetingStarted] = useState(false);
+
+  // Initialize signaling and handle meeting state
+  useEffect(() => {
+    if (!meetingId || !accessToken) return;
+    
+    signaling.init(meetingId, accessToken);
+    
+    const cleanup = signaling.onMessage((message) => {
+      switch (message.type) {
+        case 'meeting-started':
+          setMeetingStarted(true);
+          setAccessStatus('approved');
+          break;
+        case 'meeting-ended':
+          setMeetingStarted(false);
+          setAccessStatus('pending');
+          break;
+        case 'user-joined':
+          setParticipants(prev => [...prev, message.userId]);
+          break;
+        case 'user-left':
+          setParticipants(prev => prev.filter(id => id !== message.userId));
+          break;
+      }
+    });
+
+    // Check if meeting is already in progress
+    const checkMeetingStatus = async () => {
+      try {
+        const response = await fetch(`/api/meetings/${meetingId}/status`, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const data = await response.json();
+        if (data.status === 'in-progress') {
+          setMeetingStarted(true);
+        }
+      } catch (error) {
+        console.error('Error checking meeting status:', error);
+      }
+    };
+
+    checkMeetingStatus();
+
+    return () => {
+      cleanup();
+      signaling.close();
+    };
+  }, [meetingId, accessToken]);
   const [bandwidth, setBandwidth] = useState('auto');
   const [virtualBackground, setVirtualBackground] = useState('none');
   const [isHost, setIsHost] = useState(false);
