@@ -1,0 +1,164 @@
+/* MeetingCard.css */
+.meeting-card {
+  --card-padding: clamp(1rem, 2vw, 1.5rem);
+  background: var(--surface);
+  border-radius: var(--radius-lg, 1rem);
+  border: 1px solid var(--border-color);
+  padding: var(--card-padding);
+  
+  display: grid;
+  gap: 1.25rem;
+  
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  
+  box-shadow: 
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.meeting-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.meeting-card-header {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.meeting-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.meeting-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.info-item svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.info-item.location {
+  grid-column: 1 / -1;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.location-details {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.location-type {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.location-label {
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
+.live-indicator {
+  width: 8px;
+  height: 8px;
+  background: var(--error);
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.5rem;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.meeting-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.control-btn {
+  --btn-bg: var(--surface);
+  --btn-border: var(--border-color);
+  --btn-text: var(--text-dark);
+  
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  font-weight: 500;
+  font-size: 0.875rem;
+  
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.control-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.control-btn.primary {
+  --btn-bg: var(--primary);
+  --btn-border: var(--primary);
+  --btn-text: white;
+}
+
+.control-btn.secondary {
+  --btn-bg: var(--info);
+  --btn-border: var(--info);
+  --btn-text: white;
+}
+
+.control-btn.info {
+  --btn-bg: var(--surface);
+  --btn-border: var(--info);
+  --btn-text: var(--info);
+}
+
+.control-btn.outline {
+  background: transparent;
+  --btn-text: var(--text-muted);
+}
+
+.control-btn:hover {
+  --btn-bg: color-mix(in srgb, var(--btn-bg) 90%, black);
+  transform: translateY(-1px);
+}
+
+.control-btn:active {
+  transform: translateY(0);
+}

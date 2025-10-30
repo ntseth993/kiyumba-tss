@@ -39,6 +39,8 @@ import Meetings from './pages/Meetings';
 import AdminMeetings from './pages/AdminMeetings';
 import AdminVisitings from './pages/AdminVisitings';
 import VisitRegister from './pages/VisitRegister';
+import LiveMeetingPage from './pages/LiveMeetingPage';
+import MeetingNotifier from './components/MeetingNotifier';
 
 // New School Management System Dashboards
 import TeacherManagementDashboard from './pages/TeacherManagementDashboard';
@@ -79,6 +81,7 @@ const ProtectedRoute = ({ children, requiredRole, allowedRoles }) => {
 function AppRoutes() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MeetingNotifier />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -376,6 +379,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute allowedRoles={['admin', 'teacher', 'staff', 'student', 'parent']}>
               <Meetings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/meetings/live/:meetingId"
+          element={
+            <ProtectedRoute allowedRoles={['admin', 'teacher', 'staff', 'student', 'parent']}>
+              <LiveMeetingPage />
             </ProtectedRoute>
           }
         />

@@ -26,7 +26,7 @@ import {
   Video
 } from 'lucide-react';
 import ImpersonationBanner from './ImpersonationBanner';
-// import NotificationBell from './NotificationBell';
+import NotificationBell from './NotificationBell';
 import './Navbar.css';
 
 const Navbar = () => {

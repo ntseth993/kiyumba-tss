@@ -1,0 +1,92 @@
+/* Whiteboard.css */
+.whiteboard {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.toolbar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tool-btn:hover {
+  background: var(--surface-strong);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.tool-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.tool-btn.danger {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.tool-btn.danger:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.color-picker {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.line-width {
+  width: 100px;
+  height: 36px;
+  padding: 0 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.drawing-canvas {
+  flex: 1;
+  background: white;
+  cursor: crosshair;
+  touch-action: none;
+  width: 100%;
+  height: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .toolbar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .line-width {
+    width: 80px;
+  }
+}

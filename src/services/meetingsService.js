@@ -3,14 +3,8 @@ const getBaseURL = () => {
   if (import.meta.env.VITE_USE_LOCAL_STORAGE === 'true') {
     return 'INVALID_API_URL';
   }
-
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-
-  // Use the same port as the main API service
-  const port = import.meta.env.VITE_API_PORT || '4000';
-  return `http://localhost:${port}`;
+  // Force localStorage mode temporarily
+  return 'INVALID_API_URL';
 };
 
 const API_BASE = getBaseURL();

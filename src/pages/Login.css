@@ -3,9 +3,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
   position: relative;
+  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
 }
 
 .back-button {
@@ -38,7 +38,10 @@
 
 .login-card {
   padding: 48px 40px;
-  background-color: var(--bg-white);
+  background-color: var(--surface);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  border-radius: 12px;
 }
 
 .login-header {
@@ -159,29 +162,26 @@
 /* Demo credentials */
 .demo-credentials {
   margin-top: 2rem;
-  padding: 2rem;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(15px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  padding: 1.5rem;
+  background: var(--surface-strong);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 20px rgba(15,23,42,0.04);
 }
 
 .demo-credentials h3 {
-  color: white;
+  color: var(--text-dark);
   margin: 0 0 1rem 0;
   text-align: center;
-  font-size: 1.2rem;
-  font-weight: 600;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .demo-credentials p {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-light);
   font-size: 0.95rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   text-align: center;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .demo-buttons {
@@ -191,72 +191,79 @@
 }
 
 .demo-btn {
-  padding: 0.875rem 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-dark);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.18s ease;
   text-align: center;
-  min-height: 48px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(5px);
 }
 
 .demo-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.8);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--card-shadow);
 }
 
-.demo-btn.admin:hover {
-  background: rgba(79, 70, 229, 0.4);
-  border-color: #4F46E5;
+.demo-btn.admin:hover { background: var(--primary-dark); color: white; }
+.demo-btn.staff:hover { background: var(--secondary-color); color: white; }
+.demo-btn.teacher:hover { background: var(--accent-color); color: white; }
+.demo-btn.student:hover { background: var(--error-color); color: white; }
+.demo-btn.dod:hover { background: var(--error-color); color: white; }
+.demo-btn.dos:hover { background: var(--primary-dark); color: white; }
+.demo-btn.accountant:hover { background: var(--secondary-color); color: white; }
+.demo-btn.animateur:hover { background: var(--accent-color); color: white; }
+.demo-btn.secretary:hover { background: var(--primary-dark); color: white; }
+
+/* Stronger, component-scoped input styles to avoid accidental overrides
+   Some other page-level CSS was affecting form inputs (colors, padding,
+   or visibility). These rules live under `.login-card` to keep them local
+   and high-specificity so inputs are visible and usable. */
+.login-card .form-group input,
+.login-card .form-group select,
+.login-card .form-group textarea {
+  width: 100%;
+  display: block;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: #ffffff; /* keep inputs white inside the card */
+  color: var(--text-dark);
+  font-size: 1rem;
+  line-height: 1.4;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: 8px;
 }
 
-.demo-btn.staff:hover {
-  background: rgba(16, 185, 129, 0.4);
-  border-color: #10B981;
+.login-card .form-group input::placeholder,
+.login-card .form-group textarea::placeholder {
+  color: #9aa0a6;
+  opacity: 1;
 }
 
-.demo-btn.teacher:hover {
-  background: rgba(245, 158, 11, 0.4);
-  border-color: #F59E0B;
+.login-card .form-group input:focus,
+.login-card .form-group select:focus,
+.login-card .form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
 }
 
-.demo-btn.student:hover {
-  background: rgba(239, 68, 68, 0.4);
-  border-color: #EF4444;
+/* Ensure labels and icons are aligned with inputs */
+.login-card .form-group label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-dark);
+  font-weight: 600;
 }
 
-.demo-btn.dod:hover {
-  background: rgba(239, 68, 68, 0.4);
-  border-color: #EF4444;
-}
-
-.demo-btn.dos:hover {
-  background: rgba(79, 70, 229, 0.4);
-  border-color: #4F46E5;
-}
-
-.demo-btn.accountant:hover {
-  background: rgba(16, 185, 129, 0.4);
-  border-color: #10B981;
-}
-
-.demo-btn.animateur:hover {
-  background: rgba(245, 158, 11, 0.4);
-  border-color: #F59E0B;
-}
-
-.demo-btn.secretary:hover {
-  background: rgba(139, 92, 246, 0.4);
-  border-color: #8B5CF6;
-}

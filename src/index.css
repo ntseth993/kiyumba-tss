@@ -1,13 +1,20 @@
 :root {
-  --primary-color: #4F46E5;
-  --primary-dark: #4338CA;
-  --secondary-color: #10B981;
-  --accent-color: #F59E0B;
-  --text-dark: #1F2937;
-  --text-light: #6B7280;
-  --bg-light: #F9FAFB;
+  /* Modern, professional palette */
+  --primary-color: #2563EB;   /* blue-600 */
+  --primary-dark: #1D4ED8;    /* blue-700 */
+  --secondary-color: #06B6D4; /* cyan-500 */
+  --accent-color: #F59E0B;    /* amber */
+  --text-dark: #0F172A;       /* slate-900 */
+  --text-light: #475569;      /* slate-600 */
+  --muted: #94A3B8;
+  --bg-light: #F8FAFF;        /* very light background */
+  --bg-gradient-start: #F8FAFF;
+  --bg-gradient-end: #EEF2FF;
   --bg-white: #FFFFFF;
-  --border-color: #E5E7EB;
+  --surface: #FFFFFF;         /* card surface */
+  --surface-strong: rgba(15,23,42,0.06);
+  --border-color: rgba(15,23,42,0.06);
+  --card-shadow: 0 6px 20px rgba(16,24,40,0.06);
   --error-color: #EF4444;
   --success-color: #10B981;
 }
@@ -24,7 +31,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--text-dark);
-  background-color: var(--bg-light);
+  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
   line-height: 1.6;
 }
 
@@ -119,7 +126,7 @@ p {
 .btn-primary:hover {
   background-color: var(--primary-dark);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+  box-shadow: var(--card-shadow);
 }
 
 .btn-secondary {

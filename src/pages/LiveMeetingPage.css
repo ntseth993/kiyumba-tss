@@ -1,0 +1,26 @@
+/* LiveMeetingPage.css */
+.live-meeting-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.live-meeting-page .navbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.live-meeting-page .footer {
+  display: none; /* Hide footer in live meeting view */
+}
+
+/* When navbar is minimal, reduce its height */
+.live-meeting-page .navbar.minimal {
+  padding: 0.5rem 1rem;
+}
+
+/* Ensure the live meeting component takes all available space */
+.live-meeting-page .live-meeting {
+  flex: 1;
+  height: auto;
+}

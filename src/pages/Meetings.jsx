@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Video, Calendar, Clock, Users, Play, Eye, Search, Filter } from 'lucide-react';
+import { Video, Calendar, Clock, Users, Play, Eye, Search, Filter, MapPin } from 'lucide-react';
+import MeetingCard from '../components/MeetingCard';
 import { useAuth } from '../context/AuthContext';
 import {
   getMeetings,
@@ -107,8 +108,42 @@ const Meetings = () => {
       case 'teams': return '👥';
       case 'googleMeet': return '🔗';
       case 'webrtc': return '📹';
+      case 'physical': return '🏫';
+      case 'hybrid': return '🔄';
       default: return '💬';
     }
+  };
+
+  const getLocationInfo = (meeting) => {
+    if (meeting.venue) {
+      return {
+        icon: '🏫',
+        label: meeting.venue,
+        type: 'Physical'
+      };
+    }
+    
+    if (meeting.platform) {
+      return {
+        icon: getPlatformIcon(meeting.platform),
+        label: meeting.platform === 'webrtc' ? 'Built-in Video Call' : meeting.platform,
+        type: 'Virtual'
+      };
+    }
+
+    if (meeting.link) {
+      return {
+        icon: '🔗',
+        label: 'External Link',
+        type: 'Virtual'
+      };
+    }
+
+    return {
+      icon: '📍',
+      label: 'Location TBD',
+      type: 'Unspecified'
+    };
   };
 
   const canJoinMeeting = (meeting) => {
@@ -193,7 +228,7 @@ const Meetings = () => {
             <Search size={20} className="search-icon" />
             <input
               type="text"
-              placeholder="Search meetings..."
+              placeholder="Search meetings by title, location, or host..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
@@ -322,6 +357,18 @@ const Meetings = () => {
                       <Users size={16} />
                       <span>Host: {meeting.hostName}</span>
                     </div>
+                    {meeting.platform && (
+                      <div className="detail-item">
+                        <Video size={16} />
+                        <span>Source: {meeting.platform}</span>
+                      </div>
+                    )}
+                    {meeting.location && (
+                      <div className="detail-item location-item">
+                        <Building size={16} />
+                        <span>{meeting.location}</span>
+                      </div>
+                    )}
                     {meeting.participants && meeting.participants.length > 0 && (
                       <div className="detail-item">
                         <Users size={16} />
@@ -347,13 +394,20 @@ const Meetings = () => {
                         className="btn btn-success btn-small"
                         onClick={() => handleJoinMeeting(meeting)}
                       >
-                        Join Meeting
+                        <Play size={16} />
+                        Join {meeting.platform || 'Web'} Meeting
                       </button>
                     )}
                     {meeting.status === 'active' && (
-                      <span className="live-indicator">
-                        🔴 LIVE
-                      </span>
+                      <div className="meeting-active-info">
+                        <span className="live-indicator">
+                          🔴 LIVE
+                        </span>
+                        <a href={`/meetings/live/${meeting.id}`} className="btn btn-primary btn-small">
+                          <Video size={16} />
+                          Enter Live Session
+                        </a>
+                      </div>
                     )}
                   </div>
                 </div>

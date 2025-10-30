@@ -1,21 +1,55 @@
-/* Meetings.css */
+/* Modern Meetings Layout */
 .meetings-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  color: var(--text-dark);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 2rem;
+  position: relative;
+  isolation: isolate;
+}
+
+.meetings-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, 
+    rgba(var(--primary-rgb), 0.1),
+    transparent 70%);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .meetings-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: min(100% - 2rem, 1200px);
+  margin-inline: auto;
+  padding-block: clamp(1rem, 3vw, 2rem);
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+@media (min-width: 640px) {
+  .meetings-container {
+    padding: 2rem;
+  }
 }
 
 .page-header {
   display: flex;
+  flex-direction: column;
+  gap: 1rem;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 2rem;
-  color: white;
+  color: var(--text-dark);
+}
+
+@media (min-width: 768px) {
+  .page-header {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 
 .page-header h1 {
@@ -40,22 +74,46 @@
 }
 
 /* Search and Filters */
+/* Search and Filters */
 .filters-section {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  display: flex;
+  --filter-padding: clamp(1rem, 2vw, 1.5rem);
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 1rem);
+  padding: var(--filter-padding);
+  margin-block-end: clamp(1.5rem, 3vw, 2.5rem);
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 1rem;
-  align-items: center;
+  width: 100%;
+  z-index: 1;
+  backdrop-filter: blur(8px);
+  box-shadow: 
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filters-section:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+@media (min-width: 768px) {
+  .filters-section {
+    grid-template-columns: minmax(200px, 400px) auto;
+    align-items: center;
+    padding: var(--filter-padding);
+  }
 }
 
 .search-container {
   position: relative;
   flex: 1;
   max-width: 400px;
+  z-index: 2;
 }
 
 .search-icon {
@@ -63,51 +121,243 @@
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-dark);
+  opacity: 0.7;
 }
+
+.meeting-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  position: relative;
+}
+
+.meeting-actions button {
+  --btn-bg: var(--surface);
+  --btn-border: var(--border-color);
+  --btn-text: var(--text-dark);
+  
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--radius-md, 0.5rem);
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  font-weight: 500;
+  
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  cursor: pointer;
+  user-select: none;
+  transform-origin: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Modern touch target size */
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  
+  /* Remove default button styles */
+  -webkit-tap-highlight-color: transparent;
+  outline-offset: 2px;
+}
+
+.meeting-actions button:hover {
+  --btn-bg: var(--surface-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.meeting-actions button:active {
+  transform: translateY(0);
+}
+
+.meeting-actions button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Primary action button */
+.meeting-actions button.primary {
+  --btn-bg: var(--primary);
+  --btn-border: var(--primary);
+  --btn-text: white;
+}
+
+.meeting-actions button.primary:hover {
+  --btn-bg: var(--primary-dark);
+}
+
+/* Loading state */
+.meeting-actions button[aria-busy="true"] {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.meetings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
+  margin-block: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.meeting-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg, 1rem);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  
+  border: 1px solid var(--border-color);
+  box-shadow: 
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.meeting-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.meeting-status {
+  --status-color: var(--primary);
+  padding: 0.375rem 0.875rem;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  
+  color: var(--status-color);
+  background: color-mix(in srgb, var(--status-color) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--status-color) 30%, transparent);
+  
+  position: relative;
+  isolation: isolate;
+}
+
+.meeting-status::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--status-color);
+  opacity: 0.08;
+  z-index: -1;
+  border-radius: inherit;
+}
+
+.meeting-status[data-status="active"] {
+  --status-color: var(--success);
+}
+
+.meeting-status[data-status="scheduled"] {
+  --status-color: var(--info);
+}
+
+.meeting-status[data-status="ended"] {
+  --status-color: var(--warning);
+}
+
+.meeting-status[data-status="cancelled"] {
+  --status-color: var(--error);
+}
+/* // Initialize meeting from localStorage
+const meetings = JSON.parse(localStorage.getItem('schoolMeetings') || '[]');
+const currentMeeting = meetings.find(m => m.id === meetingId);
+
+if (!currentMeeting) {
+  // Create a new meeting if it doesn't exist
+  const newMeeting = {
+    id: meetingId,
+    title: 'New Meeting',
+    status: 'active',
+    participants: []
+  };
+  meetings.push(newMeeting);
+  localStorage.setItem('schoolMeetings', JSON.stringify(meetings));
+  setMeeting(newMeeting);
+} else {
+  setMeeting(currentMeeting);
+} */
 
 .search-input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 3rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: var(--bg-light);
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  font-size: 1rem;
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  background: var(--bg-white);
 }
 
 .search-input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-light);
+  opacity: 0.7;
 }
 
 .filter-select {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: white;
+  color: var(--text-dark);
 }
 
 .filter-select select {
   padding: 0.75rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: var(--bg-light);
+  color: var(--text-dark);
   cursor: pointer;
   min-width: 150px;
+  transition: all 0.2s ease;
+}
+
+.filter-select select:hover {
+  border-color: var(--primary-color);
+}
+
+.filter-select select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  background: var(--bg-white);
 }
 
 /* Tabs Navigation */
 .tabs-navigation {
   display: flex;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--surface);
+  border: 1px solid var(--border-color);
   border-radius: 1rem;
   padding: 0.5rem;
   margin-bottom: 2rem;
   overflow-x: auto;
   gap: 0.5rem;
+  box-shadow: var(--card-shadow);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tabs-navigation::-webkit-scrollbar {
+  display: none;
 }
 
 .tab-button {
@@ -151,18 +401,25 @@
 
 .meetings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .meetings-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
 }
 
 .meeting-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--surface);
+  border: 1px solid var(--border-color);
   border-radius: 1rem;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
+  padding: 1.25rem;
+  transition: all 0.2s ease;
   position: relative;
+  box-shadow: var(--card-shadow);
 }
 
 .meeting-card:hover {
@@ -194,16 +451,36 @@
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  line-height: 1;
 }
 
 .status-badge {
-  background: var(--status-color, #667eea);
+  background-color: var(--primary-color);
   color: white;
 }
 
+.status-badge.scheduled {
+  background-color: var(--primary-color);
+}
+
+.status-badge.active {
+  background-color: var(--success-color);
+}
+
+.status-badge.ended {
+  background-color: var(--text-light);
+}
+
+.status-badge.cancelled {
+  background-color: var(--error-color);
+}
+
 .platform-badge {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background-color: var(--surface-strong);
+  color: var(--text-dark);
 }
 
 .type-badge {
@@ -308,6 +585,12 @@
   opacity: 0.6;
 }
 
+.meeting-active-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .live-indicator {
   background: #ef4444;
   color: white;
@@ -316,6 +599,35 @@
   font-size: 0.75rem;
   font-weight: 500;
   animation: pulse 2s infinite;
+}
+
+.btn-success,
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+  border: none;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  text-decoration: none;
+}
+
+.location-item {
+  color: #10b981;
+  font-weight: 500;
 }
 
 @keyframes pulse {
@@ -399,6 +711,84 @@
   font-size: 1.25rem;
 }
 
+/* Contrast & visibility overrides for Meetings page
+   Some translucent/backdrop styles made text and inputs hard to read
+   on the gradient background — raise contrast locally here. */
+.meetings-page {
+  /* Use the global light gradient background for a modern clean look */
+  background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  color: var(--text-dark);
+}
+
+.meetings-container {
+  color: var(--text-dark);
+}
+
+.page-header h1 {
+  color: var(--text-dark);
+  text-shadow: none;
+}
+
+.page-header p {
+  color: var(--text-light);
+}
+
+.search-input {
+  background: var(--surface);
+  color: var(--text-dark);
+  border-color: var(--border-color);
+}
+
+.search-input::placeholder {
+  color: var(--muted);
+}
+
+.meetings-grid,
+.meetings-list,
+.meeting-card,
+.meeting-item {
+  /* use a white card surface with subtle shadow to improve contrast */
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-dark);
+  box-shadow: var(--card-shadow);
+}
+
+.meeting-card h3,
+.meeting-item h3 {
+  color: var(--text-dark);
+  font-weight: 700;
+}
+
+.meeting-card p,
+.meeting-item p,
+.meeting-details,
+.detail-item,
+.meeting-date,
+.meeting-time {
+  color: var(--text-light);
+}
+
+.btn-icon,
+.btn-small,
+.btn-outline {
+  color: var(--text-dark);
+  border-color: var(--border-color);
+  background: transparent;
+}
+
+/* Improve visibility of badges */
+.status-badge,
+.platform-badge,
+.type-badge {
+  opacity: 1;
+  color: var(--text-dark);
+}
+
+@media (max-width: 768px) {
+  .meetings-container { padding: 1rem; }
+}
+
 /* Modal */
 .modal-overlay {
   position: fixed;
@@ -415,20 +805,27 @@
 }
 
 .modal-content {
-  background: white;
+  background: var(--surface);
+  color: var(--text-dark);
   border-radius: 1rem;
   max-width: 600px;
   width: 100%;
   max-height: 80vh;
   overflow-y: auto;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
 .modal-header h2 {
@@ -453,7 +850,7 @@
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
 }
 
 .meeting-details-modal {
@@ -525,9 +922,9 @@
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  padding: 1.5rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--surface-strong);
 }
 
 /* Button Styles */

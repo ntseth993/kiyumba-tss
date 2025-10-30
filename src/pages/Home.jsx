@@ -19,6 +19,9 @@ const Home = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [showComments, setShowComments] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [newComment, setNewComment] = useState('');
+  const [viewedPosts, setViewedPosts] = useState(new Set());
 
   // Check if user is admin
   const isAdmin = user?.role === 'admin' || user?.role === 'Admin' || user?.isAdmin;
@@ -71,10 +74,16 @@ const Home = () => {
 
   const loadEvents = async () => {
     try {
-      const eventsData = JSON.parse(localStorage.getItem('schoolEvents') || '[]');
+      let eventsData = [];
+      try {
+        eventsData = JSON.parse(localStorage.getItem('schoolEvents') || '[]');
+      } catch (parseError) {
+        console.warn('Invalid events data in localStorage, using empty array');
+      }
       setEvents(eventsData);
     } catch (error) {
       console.error('Error loading events:', error);
+      setEvents([]); // Fallback to empty array
     }
   };
 
@@ -231,9 +240,7 @@ const Home = () => {
   return (
     <div className="home">
       <Navbar />
-
-      {/* Loading State */}
-      {loading && (
+      {loading ? (
         <div style={{
           display: 'flex',
           justifyContent: 'center',
@@ -244,9 +251,8 @@ const Home = () => {
         }}>
           Loading...
         </div>
-      )}
-
-      {!loading && (
+      ) : (
+        <>
       <section className="hero">
         <div className="hero-overlay"></div>
         <div className="hero-container">
@@ -352,7 +358,6 @@ const Home = () => {
                 key={`dynamic-${event.id}`}
                 className={`event-card ${event.featured ? 'featured' : ''}`}
                 style={{ borderLeftColor: getEventTypeColor(event.eventType) }}
-
               >
                 {event.imageUrl && (
                   <div className="event-image">
@@ -399,7 +404,6 @@ const Home = () => {
             ))}
 
             {/* Always show hardcoded events */}
-
             <div className="event-card featured">
               <div className="event-image">
                 <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzNiODJmNiIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5GaW5hbCBFeGFtIFdlZWs8L3RleHQ+Cjwvc3ZnPg==" alt="Final Exam Week" />
@@ -1334,6 +1338,8 @@ Navbar.jsx:30   GET http://localhost:3026/src/components/NotificationBell.jsx?t=
         </div>
       )}
 
+        </>
+      )}
       <Footer />
     </div>
   );
