@@ -14,5 +14,17 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, '/api')
       }
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    },
+    sourcemap: false,
+    chunkSizeWarningLimit: 1600
+  },
+  resolve: {
+    extensions: ['.js', '.jsx']
   }
 })
