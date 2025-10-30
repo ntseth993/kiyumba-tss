@@ -15,9 +15,19 @@
 [[headers]]
   for = "/*.js"
     [headers.values]
-    Content-Type = "text/javascript"
+    Content-Type = "application/javascript"
 
 [[headers]]
   for = "/*.jsx"
     [headers.values]
-    Content-Type = "text/javascript"
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/*.mjs"
+    [headers.values]
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/assets/*.js"
+    [headers.values]
+    Content-Type = "application/javascript"

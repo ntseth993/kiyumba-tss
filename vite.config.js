@@ -18,13 +18,23 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: undefined
+        manualChunks: undefined,
+        format: 'es',
+        entryFileNames: '[name].[hash].mjs',
+        chunkFileNames: '[name].[hash].mjs',
+        assetFileNames: '[name].[hash][extname]'
       }
     },
     sourcemap: false,
-    chunkSizeWarningLimit: 1600
+    chunkSizeWarningLimit: 1600,
+    modulePreload: {
+      polyfill: true
+    }
   },
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx']
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom']
   }
 })
